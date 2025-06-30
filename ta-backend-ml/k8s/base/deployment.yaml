@@ -1,0 +1,346 @@
+# QA³ Backend ML Kubernetes Deployment
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: ksa-ta-backend-ml
+  annotations:
+    iam.gke.io/gcp-service-account: gsa-ta-backend-ml@ta-project-and-dot.iam.gserviceaccount.com
+---
+# Redis Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: namespace
+  name: ta-redis
+  labels:
+    app: ta-redis
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ta-redis
+  template:
+    metadata:
+      labels:
+        app: ta-redis
+    spec:
+      containers:
+        - name: redis
+          image: redis:7-alpine
+          ports:
+            - containerPort: 6379
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          volumeMounts:
+            - name: redis-data
+              mountPath: /data
+      volumes:
+        - name: redis-data
+          emptyDir: {}
+---
+# Redis Service
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: namespace
+  name: ta-redis-service
+spec:
+  selector:
+    app: ta-redis
+  ports:
+    - protocol: TCP
+      port: 6379
+      targetPort: 6379
+---
+# Web Application Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: namespace
+  name: ta-backend-ml
+  labels:
+    app: ta-backend-ml
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: ta-backend-ml
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  minReadySeconds: 5
+  template:
+    metadata:
+      labels:
+        app: ta-backend-ml
+    spec:
+      serviceAccountName: ksa-ta-backend-ml
+      containers:
+        - name: ta-backend-ml
+          image: image
+          command: ["/app/docker-entrypoint.sh"]
+          args: ["prod"]
+          resources:
+            requests:
+              cpu: 200m
+              memory: 512Mi
+            limits:
+              cpu: 1000m
+              memory: 2Gi
+          livenessProbe:
+            httpGet:
+              path: /api/healthcheck
+              port: 8000
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /api/healthcheck
+              port: 8000
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          ports:
+            - containerPort: 8000
+          env:
+            - name: REDIS_HOST
+              value: ta-redis-service
+            - name: REDIS_PORT
+              value: "6379"
+            - name: REDIS_URL
+              value: redis://ta-redis-service:6379/0
+            - name: DATABASE_ROOT_URL
+              valueFrom:
+                secretKeyRef:
+                  name: ta-envs
+                  key: DATABASE_ROOT_URL
+            - name: OPENAI_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: ta-envs
+                  key: OPENAI_API_KEY
+            - name: SENTRY_DSN
+              valueFrom:
+                secretKeyRef:
+                  name: ta-envs
+                  key: SENTRY_DSN
+                  optional: true
+        
+        - name: cloud-sql-proxy
+          image: gcr.io/cloud-sql-connectors/cloud-sql-proxy:2.6.1
+          args:
+            - "--private-ip"
+            - "--structured-logs"
+            - "--port=$(DB_PORT)"
+            - "$(INSTANCE_CONNECTION_NAME)"
+          envFrom:
+            - secretRef:
+                name: ta-envs
+          securityContext:
+            runAsNonRoot: true
+---
+# Celery Worker Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: namespace
+  name: ta-backend-ml-worker
+  labels:
+    app: ta-backend-ml-worker
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: ta-backend-ml-worker
+  template:
+    metadata:
+      labels:
+        app: ta-backend-ml-worker
+    spec:
+      serviceAccountName: ksa-ta-backend-ml
+      containers:
+        - name: ta-backend-ml-worker
+          image: image
+          command: ["/app/docker-entrypoint.sh"]
+          args: ["worker"]
+          resources:
+            requests:
+              cpu: 500m
+              memory: 1Gi
+            limits:
+              cpu: 2000m
+              memory: 4Gi
+          env:
+            - name: REDIS_HOST
+              value: ta-redis-service
+            - name: REDIS_PORT
+              value: "6379"
+            - name: REDIS_URL
+              value: redis://ta-redis-service:6379/0
+            - name: DATABASE_ROOT_URL
+              valueFrom:
+                secretKeyRef:
+                  name: ta-envs
+                  key: DATABASE_ROOT_URL
+            - name: OPENAI_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: ta-envs
+                  key: OPENAI_API_KEY
+            - name: SENTRY_DSN
+              valueFrom:
+                secretKeyRef:
+                  name: ta-envs
+                  key: SENTRY_DSN
+                  optional: true
+        
+        - name: cloud-sql-proxy
+          image: gcr.io/cloud-sql-connectors/cloud-sql-proxy:2.6.1
+          args:
+            - "--private-ip"
+            - "--structured-logs"
+            - "--port=$(DB_PORT)"
+            - "$(INSTANCE_CONNECTION_NAME)"
+          envFrom:
+            - secretRef:
+                name: ta-envs
+          securityContext:
+            runAsNonRoot: true
+---
+# Celery Beat Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: namespace
+  name: ta-backend-ml-beat
+  labels:
+    app: ta-backend-ml-beat
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ta-backend-ml-beat
+  template:
+    metadata:
+      labels:
+        app: ta-backend-ml-beat
+    spec:
+      serviceAccountName: ksa-ta-backend-ml
+      containers:
+        - name: ta-backend-ml-beat
+          image: image
+          command: ["/app/docker-entrypoint.sh"]
+          args: ["beat"]
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          env:
+            - name: REDIS_HOST
+              value: ta-redis-service
+            - name: REDIS_PORT
+              value: "6379"
+            - name: REDIS_URL
+              value: redis://ta-redis-service:6379/0
+            - name: DATABASE_ROOT_URL
+              valueFrom:
+                secretKeyRef:
+                  name: ta-envs
+                  key: DATABASE_ROOT_URL
+---
+# Flower Deployment (optional monitoring)
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: namespace
+  name: ta-backend-ml-flower
+  labels:
+    app: ta-backend-ml-flower
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ta-backend-ml-flower
+  template:
+    metadata:
+      labels:
+        app: ta-backend-ml-flower
+    spec:
+      serviceAccountName: ksa-ta-backend-ml
+      containers:
+        - name: ta-backend-ml-flower
+          image: image
+          command: ["/app/docker-entrypoint.sh"]
+          args: ["flower"]
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          ports:
+            - containerPort: 5555
+          env:
+            - name: REDIS_HOST
+              value: ta-redis-service
+            - name: REDIS_PORT
+              value: "6379"
+            - name: REDIS_URL
+              value: redis://ta-redis-service:6379/0
+---
+# Backend Config for Load Balancer
+apiVersion: cloud.google.com/v1
+kind: BackendConfig
+metadata:
+  name: ta-backend-ml
+spec:
+  timeoutSec: 120
+  healthCheck:
+    requestPath: /api/healthcheck
+    port: 8000
+  securityPolicy:
+    name: xxx-app-security-policy
+---
+# Web Service
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: namespace
+  name: ta-backend-ml-service
+  annotations:
+    cloud.google.com/neg: '{"ingress": true}'
+    cloud.google.com/backend-config: '{"default": "ta-backend-ml"}'
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      protocol: TCP
+      port: 80
+      targetPort: 8000
+  selector:
+    app: ta-backend-ml
+---
+# Flower Service (optional)
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: namespace
+  name: ta-backend-ml-flower-service
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      protocol: TCP
+      port: 5555
+      targetPort: 5555
+  selector:
+    app: ta-backend-ml-flower

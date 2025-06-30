@@ -1,0 +1,5 @@
+[files]
+extend-exclude = [
+  "tasks/**/*_prompts.py",
+  "tests/mocks/service_account_credentials.json"
+]

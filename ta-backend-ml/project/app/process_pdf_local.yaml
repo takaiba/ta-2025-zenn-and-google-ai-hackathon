@@ -1,0 +1,80 @@
+openapi: 3.1.0
+info:
+  title: PDF Processing API
+  description: API for processing local PDF files
+  version: v1.0.0
+servers:
+  - url: https://dev-ta-backend-ml.p0x0q.com
+paths:
+  /api/v1/dify/multimodal/process_pdf_multiple_local:
+    post:
+      summary: Process local PDF files
+      description: Processes local PDF files and extracts information based on the given prompt
+      operationId: processPdfLocal
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                pdf_path:
+                  type: string
+                  description: Path to the local PDF file
+                  example: "./output/output-2647792559145097887.pdf"
+                prompt:
+                  type: string
+                  description: Prompt for processing the PDF content
+                  example: "このページの情報（テキストではなく、表や図からわかる情報）を詳細にまとめてください。例えばチェックマークが入っていたら、これは「できる」ということがわかります。"
+              required:
+                - pdf_path
+                - prompt
+      responses:
+        '200':
+          description: PDF processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: string
+                    description: The processed result from the PDF
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Invalid request parameters"
+        '401':
+          description: Unauthorized access
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Invalid token"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Failed to process PDF"
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

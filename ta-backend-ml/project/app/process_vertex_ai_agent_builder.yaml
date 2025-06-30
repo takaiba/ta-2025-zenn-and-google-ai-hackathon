@@ -1,0 +1,67 @@
+openapi: 3.1.0
+info:
+  title: Process Vertex AI Agent Builder
+  description: Processes requests to the Vertex AI Agent Builder.
+  version: v1.0.0
+servers:
+  - url: https://dev-ta-backend-ml.p0x0q.com/
+paths:
+  /api/v1/dify/process_vertex_ai_agent_builder:
+    post:
+      summary: Process a query with Vertex AI Agent Builder
+      description: Processes a query using the Vertex AI Agent Builder and returns the result.
+      operationId: processVertexAIAgentBuilder
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                q:
+                  type: string
+                  description: The query to be processed.
+                  example: "契約"
+                engine_id:
+                  type: string
+                  description: The engine ID to be used for processing the query.
+                  example: "uc-project-demo_1733837716716"
+      responses:
+        '200':
+          description: The result of processing the query.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: string
+                    description: The result of the query processing.
+        '401':
+          description: Unauthorized access due to invalid token.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Invalid token"
+        '405':
+          description: Method not allowed.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Invalid method"
+      security:
+        - apiKeyAuth: []
+components:
+  securitySchemes:
+    apiKeyAuth:
+      type: apiKey
+      in: header
+      name: Authorization

@@ -1,0 +1,44 @@
+{
+  "display_information": {
+    "name": "knowledgeBot",
+    "description": "Difyに接続されたSlackBotです。@knowledgeBot でメンションしてね！",
+    "background_color": "#000000"
+  },
+  "features": {
+    "bot_user": {
+      "display_name": "knowledgeBot",
+      "always_online": true
+    }
+  },
+  "oauth_config": {
+    "scopes": {
+      "bot": [
+        "channels:history",
+        "channels:read",
+        "groups:history",
+        "mpim:history",
+        "chat:write",
+        "im:history",
+        "im:read",
+        "im:write",
+        "users:read",
+        "app_mentions:read",
+        "reactions:read",
+        "groups:read"
+      ]
+    }
+  },
+  "settings": {
+    "event_subscriptions": {
+      "request_url": "https://script.google.com/macros/s/AKfycbwU-w2Gu_XqvkNqalihntbjd1cWOyWOuV4d4kUte7iBMmeyB7FbYCXD1iEZ17MoZVcj/exec",
+      "bot_events": [
+        "app_mention",
+        "message.im",
+        "reaction_added"
+      ]
+    },
+    "org_deploy_enabled": false,
+    "socket_mode_enabled": false,
+    "token_rotation_enabled": false
+  }
+}

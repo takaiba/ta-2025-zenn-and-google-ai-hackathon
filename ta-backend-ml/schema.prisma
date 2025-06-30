@@ -1,0 +1,346 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider        = "prisma-client-py"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_ROOT_URL")
+}
+
+// Auth0のユーザー情報を管理するテーブル
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  accounts Account[]
+}
+
+// サービス側のユーザー情報（アカウント）を管理するテーブル
+model Account {
+  id             String   @id @default(cuid())
+  name           String
+  // admin or orgAdmin or user
+  role           String
+  email          String   @unique
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+  userId         String?  @map("user_id")
+  organizationId String   @map("organization_id")
+
+  user         User?        @relation(fields: [userId], references: [id])
+  organization Organization @relation(fields: [organizationId], references: [id])
+
+  projects     ProjectMember[]
+  testSessions TestSession[]
+  bugTickets   BugTicket[]
+  bugComments  BugComment[]
+  reports      TestReport[]
+  activities   ActivityLog[]
+}
+
+// 組織情報を管理するテーブル
+model Organization {
+  id               String    @id @default(cuid())
+  name             String
+  plan             String    @default("free") // free, professional, enterprise
+  apiKey           String    @unique @map("api_key")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+  trialEndsAt      DateTime? @map("trial_ends_at")
+  subscriptionId   String?   @map("subscription_id")
+  monthlyTestLimit Int       @default(10) @map("monthly_test_limit")
+
+  accounts     Account[]
+  projects     Project[]
+  integrations Integration[]
+  usageStats   UsageStats[]
+}
+
+// プロジェクト情報を管理するテーブル
+model Project {
+  id             String   @id @default(cuid())
+  name           String
+  description    String?
+  url            String
+  organizationId String   @map("organization_id")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+  isActive       Boolean  @default(true) @map("is_active")
+
+  organization  Organization    @relation(fields: [organizationId], references: [id])
+  members       ProjectMember[]
+  testConfigs   TestConfig[]
+  testSessions  TestSession[]
+  bugTickets    BugTicket[]
+  testScenarios TestScenario[]
+  integrations  Integration[]
+}
+
+// プロジェクトメンバー中間テーブル
+model ProjectMember {
+  id        String   @id @default(cuid())
+  projectId String   @map("project_id")
+  accountId String   @map("account_id")
+  role      String   @default("member") // owner, admin, member
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  project Project @relation(fields: [projectId], references: [id])
+  account Account @relation(fields: [accountId], references: [id])
+
+  @@unique([projectId, accountId])
+  @@index([projectId])
+  @@index([accountId])
+}
+
+// テスト設定を管理するテーブル
+model TestConfig {
+  id             String   @id @default(cuid())
+  projectId      String   @map("project_id")
+  name           String
+  url            String? // テスト対象URL
+  mode           String   @default("omakase") // omakase, scenario, hybrid
+  browser        String   @default("chrome") // chrome, firefox, safari
+  viewportWidth  Int      @default(1920) @map("viewport_width")
+  viewportHeight Int      @default(1080) @map("viewport_height")
+  maxDuration    Int      @default(3600) @map("max_duration") // seconds
+  authType       String?  @map("auth_type") // basic, oauth, custom
+  authConfig     Json?    @map("auth_config")
+  excludedPaths  String[] @map("excluded_paths")
+  customRules    Json?    @map("custom_rules")
+  isDefault      Boolean  @default(false) @map("is_default")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  project      Project       @relation(fields: [projectId], references: [id])
+  testSessions TestSession[]
+}
+
+// テストセッションを管理するテーブル
+model TestSession {
+  id           String    @id @default(cuid())
+  projectId    String    @map("project_id")
+  testConfigId String    @map("test_config_id")
+  accountId    String    @map("account_id")
+  status       String    @default("pending") // pending, running, completed, failed
+  startedAt    DateTime? @map("started_at")
+  completedAt  DateTime? @map("completed_at")
+  duration     Int? // seconds
+  pagesScanned Int       @default(0) @map("pages_scanned")
+  bugsFound    Int       @default(0) @map("bugs_found")
+  testCoverage Float     @default(0) @map("test_coverage")
+  errorMessage String?   @map("error_message")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+
+  project     Project          @relation(fields: [projectId], references: [id])
+  testConfig  TestConfig       @relation(fields: [testConfigId], references: [id])
+  account     Account          @relation(fields: [accountId], references: [id])
+  bugTickets  BugTicket[]
+  testResults TestResult[]
+  reports     TestReport[]
+  sessionLogs TestSessionLog[]
+  jobQueues   JobQueue[]
+}
+
+// テスト結果詳細を管理するテーブル
+model TestResult {
+  id            String   @id @default(cuid())
+  testSessionId String   @map("test_session_id")
+  url           String
+  status        String // passed, failed, skipped
+  executionTime Int      @map("execution_time") // milliseconds
+  screenshot    String?  @db.Text
+  domSnapshot   String?  @map("dom_snapshot") @db.Text
+  consoleLogs   Json?    @map("console_logs")
+  details       Json?
+  networkLogs   Json?    @map("network_logs")
+  userActions   Json?    @map("user_actions")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  testSession TestSession @relation(fields: [testSessionId], references: [id])
+  bugTickets  BugTicket[]
+}
+
+// バグチケットを管理するテーブル
+model BugTicket {
+  id                 String    @id @default(cuid())
+  projectId          String    @map("project_id")
+  testSessionId      String    @map("test_session_id")
+  testResultId       String?   @map("test_result_id")
+  reportedById       String    @map("reported_by_id")
+  title              String
+  description        String    @db.Text
+  severity           String // critical, high, medium, low
+  status             String    @default("open") // open, in_progress, resolved, closed, false_positive
+  bugType            String    @map("bug_type") // ui, functional, performance, security
+  affectedUrl        String    @map("affected_url")
+  reproductionSteps  Json      @map("reproduction_steps")
+  expectedBehavior   String    @map("expected_behavior") @db.Text
+  actualBehavior     String    @map("actual_behavior") @db.Text
+  screenshot         String?   @db.Text
+  videoUrl           String?   @map("video_url")
+  affectedComponents String[]  @map("affected_components")
+  suggestedFix       String?   @map("suggested_fix") @db.Text
+  aiConfidenceScore  Float     @map("ai_confidence_score")
+  externalTicketId   String?   @map("external_ticket_id") // Jira, GitHub issue ID
+  externalTicketUrl  String?   @map("external_ticket_url")
+  resolvedAt         DateTime? @map("resolved_at")
+  createdAt          DateTime  @default(now()) @map("created_at")
+  updatedAt          DateTime  @updatedAt @map("updated_at")
+
+  project     Project      @relation(fields: [projectId], references: [id])
+  testSession TestSession  @relation(fields: [testSessionId], references: [id])
+  testResult  TestResult?  @relation(fields: [testResultId], references: [id])
+  reportedBy  Account      @relation(fields: [reportedById], references: [id])
+  comments    BugComment[]
+}
+
+// バグチケットコメントを管理するテーブル
+model BugComment {
+  id          String   @id @default(cuid())
+  bugTicketId String   @map("bug_ticket_id")
+  accountId   String   @map("account_id")
+  comment     String   @db.Text
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  bugTicket BugTicket @relation(fields: [bugTicketId], references: [id])
+  account   Account   @relation(fields: [accountId], references: [id])
+}
+
+// テストシナリオを管理するテーブル
+model TestScenario {
+  id              String   @id @default(cuid())
+  projectId       String   @map("project_id")
+  name            String
+  description     String?
+  priority        String   @default("medium") // high, medium, low
+  steps           Json // Array of test steps
+  expectedResults Json     @map("expected_results")
+  testData        Json?    @map("test_data")
+  isActive        Boolean  @default(true) @map("is_active")
+  isAiGenerated   Boolean  @default(false) @map("is_ai_generated")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  project Project @relation(fields: [projectId], references: [id])
+}
+
+// テストレポートを管理するテーブル
+model TestReport {
+  id            String   @id @default(cuid())
+  testSessionId String   @map("test_session_id")
+  accountId     String   @map("account_id")
+  language      String   @default("ja") // ja, en
+  reportContent String   @map("report_content") @db.Text
+  summary       Json
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  testSession TestSession @relation(fields: [testSessionId], references: [id])
+  account     Account     @relation(fields: [accountId], references: [id])
+}
+
+// 外部サービス連携を管理するテーブル
+model Integration {
+  id             String    @id @default(cuid())
+  organizationId String    @map("organization_id")
+  projectId      String?   @map("project_id")
+  type           String // github, slack, jira
+  name           String
+  config         Json // API keys, webhooks, etc.
+  isActive       Boolean   @default(true) @map("is_active")
+  lastSyncedAt   DateTime? @map("last_synced_at")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  project      Project?     @relation(fields: [projectId], references: [id])
+}
+
+// テストセッションログを管理するテーブル
+model TestSessionLog {
+  id            String   @id @default(cuid())
+  testSessionId String   @map("test_session_id")
+  logLevel      String   @map("log_level") // info, warning, error
+  message       String   @db.Text
+  metadata      Json?
+  screenshot    String?  @db.Text
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  testSession TestSession @relation(fields: [testSessionId], references: [id])
+
+  @@index([testSessionId])
+  @@index([createdAt])
+}
+
+// アクティビティログを管理するテーブル
+model ActivityLog {
+  id           String   @id @default(cuid())
+  accountId    String   @map("account_id")
+  action       String // test_started, bug_reported, project_created, etc.
+  resourceType String   @map("resource_type") // project, test_session, bug_ticket, etc.
+  resourceId   String   @map("resource_id")
+  metadata     Json?
+  screenshot   String?  @db.Text
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  account Account @relation(fields: [accountId], references: [id])
+
+  @@index([accountId])
+  @@index([resourceType, resourceId])
+  @@index([createdAt])
+}
+
+// ジョブキューを管理するテーブル
+model JobQueue {
+  id          String    @id @default(cuid())
+  type        String // test_execution, report_generation, bug_analysis
+  status      String    @default("pending") // pending, processing, completed, failed, cancelled
+  priority    Int       @default(5) // 1-10 (1が最高)
+  payload     Json // ジョブの実行に必要なパラメータ
+  result      Json? // ジョブの実行結果
+  error       String?   @db.Text
+  screenshot  String?   @db.Text
+  attempts    Int       @default(0)
+  maxAttempts Int       @default(3) @map("max_attempts")
+  scheduledAt DateTime  @default(now()) @map("scheduled_at")
+  startedAt   DateTime? @map("started_at")
+  completedAt DateTime? @map("completed_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  // リレーション用のフィールド
+  testSessionId String?      @map("test_session_id")
+  testSession   TestSession? @relation(fields: [testSessionId], references: [id])
+
+  @@index([type, status])
+  @@index([status, scheduledAt])
+  @@index([testSessionId])
+}
+
+// 使用統計を管理するテーブル
+model UsageStats {
+  id               String   @id @default(cuid())
+  organizationId   String   @map("organization_id")
+  month            DateTime @db.Date
+  testSessionCount Int      @default(0) @map("test_session_count")
+  bugReportCount   Int      @default(0) @map("bug_report_count")
+  totalTestMinutes Int      @default(0) @map("total_test_minutes")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+
+  @@unique([organizationId, month])
+  @@index([organizationId])
+  @@index([month])
+}

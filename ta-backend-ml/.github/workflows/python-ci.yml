@@ -1,0 +1,60 @@
+name: Python CI
+on:
+  push:
+    paths:
+      - "tasks/**/*.py"
+      - "tests/**/*.py"
+
+env:
+  MYSQL_DATABASE: test-ta-projects
+  MYSQL_USER: root
+  MYSQL_PORT: 3306
+  MYSQL_PASSWORD: password
+  DATABASE_ROOT_URL: mysql://root:password@localhost:3306/test-ta-projects
+
+jobs:
+  ci:
+    runs-on: self-hosted
+    services:
+      mysql:
+        image: bitnami/mysql:8.0.20
+        env:
+          # The MySQL docker container requires these environment variables to be set
+          # so we can create and migrate the test database.
+          # See: https://hub.docker.com/_/mysql
+          ALLOW_EMPTY_PASSWORD: yes
+          MYSQL_DATABASE: $MYSQL_DATABASE
+          MYSQL_USER: $MYSQL_USER
+          MYSQL_ROOT_PASSWORD: password
+          MYSQL_AUTHENTICATION_PLUGIN: mysql_native_password
+        ports:
+          # Opens port 3306 on service container and host
+          # https://docs.github.com/en/actions/using-containerized-services/about-service-containers
+          - 3306:3306
+        # Before continuing, verify the mysql container is reachable from the ubuntu host
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+    steps:
+      - uses: actions/checkout@v4
+      - uses: FedericoCarboni/setup-ffmpeg@v3
+        id: setup-ffmpeg
+      # NOTE: Read python version from .python-version in the workging directory.
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.9"
+          cache: pip
+      - name: Create venv and install python packages
+        run: |
+          python -m pip install --upgrade pip && pip install -r requirements-dev.txt && pip install -r requirements.txt
+      - name: Run Ruff Linter
+        run: |
+          ruff check tasks/
+      - name: Setup Prisma
+        run: |
+          python -m prisma migrate dev
+          python -m prisma generate
+      - name: Run mypy Type Checking
+        run: |
+          mypy tasks/
+      - name: Run pytest
+        run: |
+          pytest -s tests/

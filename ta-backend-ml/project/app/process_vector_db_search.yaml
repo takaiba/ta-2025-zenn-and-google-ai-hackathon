@@ -1,0 +1,112 @@
+openapi: 3.1.0
+info:
+  title: Vector DB Search API
+  description: Searches the vector database with a given domain name and query.
+  version: v1.0.0
+servers:
+  - url: https://dev-ta-backend-ml.p0x0q.com/
+paths:
+  api/v1/dify/process_vector_db_search:
+    post:
+      summary: Search vector database
+      description: Searches the vector database using the specified domain name and query.
+      operationId: processVectorDBSearch
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                domain_name:
+                  type: string
+                  description: The name of the domain to search in.
+                  example: "mslearn"
+                query:
+                  type: string
+                  description: The search query.
+                  example: "How to deploy Azure Functions?"
+              required:
+                - domain_name
+                - query
+      responses:
+        '200':
+          description: The search results from the vector database.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      results:
+                        type: array
+                        items:
+                          type: object
+                          description: Search result items
+                      metadata:
+                        type: object
+                        properties:
+                          domain_name:
+                            type: string
+                            description: The domain name that was searched
+                          query:
+                            type: string
+                            description: The query that was used
+                          total_results:
+                            type: integer
+                            description: Total number of results found
+                          error:
+                            type: string
+                            description: Error message if any
+        '400':
+          description: Bad request due to missing parameters.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: "Domain name is required"
+        '401':
+          description: Unauthorized access due to invalid token.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: "Invalid token"
+        '405':
+          description: Method not allowed.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: "Invalid method"
+      security:
+        - apiKeyAuth: []
+components:
+  securitySchemes:
+    apiKeyAuth:
+      type: apiKey
+      in: header
+      name: Authorization

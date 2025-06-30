@@ -1,0 +1,64 @@
+
+openapi: 3.1.0
+info:
+  title: URL Scraping API
+  description: Scrapes a given URL and returns the content in Markdown format.
+  version: v1.0.0
+servers:
+  - url: https://dev-ta-backend-ml.p0x0q.com/
+paths:
+  /api/v1/dify/process_url_scrape:
+    post:
+      summary: Process URL and scrape content
+      description: Downloads a webpage from a given URL, scrapes the content, and returns it in Markdown format.
+      operationId: processURLScrape
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                url:
+                  type: string
+                  description: The URL of the webpage to be scraped.
+                  example: "https://example.com/sample-page"
+      responses:
+        '200':
+          description: The scraped content in Markdown format.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  markdown:
+                    type: string
+                    description: The scraped content from the URL in Markdown format.
+        '401':
+          description: Unauthorized access due to invalid token.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Invalid token"
+        '405':
+          description: Method not allowed.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Invalid method"
+      security:
+        - apiKeyAuth: []
+components:
+  securitySchemes:
+    apiKeyAuth:
+      type: apiKey
+      in: header
+      name: Authorization

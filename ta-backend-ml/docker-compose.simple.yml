@@ -1,0 +1,86 @@
+version: "3.8"
+
+# 改善案2: シンプルで明確な版
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: ta-backend-ml-redis
+    expose:
+      - 6379  # 内部ネットワークのみに公開
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  web:
+    build: .
+    container_name: ta-backend-ml-web
+    command: /app/docker-entrypoint.sh web
+    volumes:
+      - .:/app
+    env_file:
+      - .env
+    environment:
+      # 内部通信の設定のみここで定義
+      REDIS_HOST: redis
+      REDIS_URL: redis://redis:6379/0
+    ports:
+      - "8000:8000"
+    depends_on:
+      redis:
+        condition: service_healthy
+
+  celery_worker:
+    build: .
+    container_name: ta-backend-ml-celery-worker
+    command: /app/docker-entrypoint.sh worker
+    volumes:
+      - .:/app
+    env_file:
+      - .env
+    environment:
+      REDIS_HOST: redis
+      REDIS_URL: redis://redis:6379/0
+    depends_on:
+      redis:
+        condition: service_healthy
+
+  celery_beat:
+    build: .
+    container_name: ta-backend-ml-celery-beat
+    command: /app/docker-entrypoint.sh beat
+    volumes:
+      - .:/app
+    env_file:
+      - .env
+    environment:
+      REDIS_HOST: redis
+      REDIS_URL: redis://redis:6379/0
+    depends_on:
+      redis:
+        condition: service_healthy
+
+  flower:
+    build: .
+    container_name: ta-backend-ml-flower
+    command: /app/docker-entrypoint.sh flower
+    volumes:
+      - .:/app
+    env_file:
+      - .env
+    environment:
+      REDIS_HOST: redis
+      REDIS_URL: redis://redis:6379/0
+    ports:
+      - "5555:5555"
+    depends_on:
+      - redis
+      - celery_worker
+
+volumes:
+  redis_data:
+
+# ネットワークはデフォルトを使用（明示的な定義を削除）

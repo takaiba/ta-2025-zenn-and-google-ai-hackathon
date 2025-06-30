@@ -1,0 +1,100 @@
+name: build and deploy on gke
+on:
+  workflow_call:
+    inputs:
+      WORKLOAD_IDENTITY_PROVIDER:
+        description: "The workload identity provider to use"
+        required: true
+        type: string
+      SERVICE_ACCOUNT:
+        description: "The service account to use"
+        required: true
+        type: string
+      GAR_LOCATION:
+        description: "The location of the Google Artifact Registry"
+        required: true
+        type: string
+      PROJECT_ID:
+        description: "The project ID"
+        required: true
+        type: string
+      REPOSITORY:
+        description: "The repository name"
+        required: true
+        type: string
+      IMAGE:
+        description: "The image name"
+        required: true
+        type: string
+      GKE_CLUSTER:
+        description: "The GKE cluster name"
+        required: true
+        type: string
+      GKE_ZONE:
+        description: "The GKE cluster zone"
+        required: true
+        type: string
+      DEPLOY_ENV:
+        description: "The deployment environment"
+        required: true
+        type: string
+      DEPLOYMENT_NAME:
+        description: "The deployment name"
+        required: true
+        type: string
+      NAMESPACE:
+        description: "The namespace"
+        required: true
+        type: string
+      DEPLOY_DIRECTORY:
+        description: "The directory to deploy"
+        required: true
+        type: string
+
+jobs:
+  Deploying:
+    timeout-minutes: 30
+    runs-on: self-hosted
+
+    permissions:
+      contents: "read"
+      id-token: "write"
+
+    steps:
+      - uses: actions/checkout@v3
+      - id: "auth"
+        name: "Authenticate to Google Cloud"
+        uses: "google-github-actions/auth@v1"
+        with:
+          token_format: "access_token"
+          workload_identity_provider: ${{ inputs.WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ inputs.SERVICE_ACCOUNT }}
+          audience: "https://github.com/takaiba"
+
+      - name: Docker configuration
+        run: |-
+          echo ${{steps.auth.outputs.access_token}} | docker login -u oauth2accesstoken --password-stdin https://${{ inputs.GAR_LOCATION }}-docker.pkg.dev
+
+      - name: Set up GKE credentials
+        uses: google-github-actions/get-gke-credentials@v1
+        with:
+          cluster_name: ${{ inputs.GKE_CLUSTER }}
+          location: ${{ inputs.GKE_ZONE }}
+
+      - name: Set up Kustomize
+        working-directory: ${{ inputs.DEPLOY_DIRECTORY }}k8s/overlayes/${{inputs.DEPLOY_ENV}}
+        run: |-
+          curl -sfL https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv5.0.3/kustomize_v5.0.3_linux_amd64.tar.gz | tar xz
+          chmod u+x ./kustomize
+
+      - name: Deploy
+        working-directory: ${{ inputs.DEPLOY_DIRECTORY }}k8s/overlayes/${{inputs.DEPLOY_ENV}}
+        run: |-
+          ./kustomize edit set image image=${{ inputs.GAR_LOCATION }}-docker.pkg.dev/${{ inputs.PROJECT_ID }}/${{ inputs.REPOSITORY }}/${{ inputs.IMAGE }}:$GITHUB_SHA
+          ./kustomize build .
+          ./kustomize build . | kubectl apply -f -
+          # while trueで継続的に動いているcronjobを削除することで新しいcronjob設定で起動するようにする
+          kubectl delete pod -n ${{ inputs.NAMESPACE }} $(kubectl get pods -n ${{ inputs.NAMESPACE }} | grep ${{ inputs.DEPLOYMENT_NAME }}- | awk '{print $1}') || true
+
+          kubectl rollout status deployment/${{ inputs.DEPLOYMENT_NAME }} -n ${{ inputs.NAMESPACE }}
+          kubectl get services -o wide -n ${{ inputs.NAMESPACE }}

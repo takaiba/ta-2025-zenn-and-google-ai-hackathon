@@ -1,0 +1,142 @@
+openapi: 3.0.0
+info:
+  title: processOrkKnowledgeSearch_dev
+  description: 検索クエリから関連するナレッジデータを検索するAPI
+  version: 1.0.0
+  
+servers:
+  - url: https://dev-ta-backend-ml.p0x0q.com
+security:
+  - bearerAuth: []
+    
+paths:
+  /api/v1/dify/process_knowledge_search:
+    post:
+      tags:
+        - Knowledge
+      summary: ナレッジデータ検索
+      description: |
+        指定された検索キーワードを使って関連するナレッジデータを検索します。
+        テナントIDによるフィルタリングを行い、検索キーワードはカンマで区切られた文字列として処理され、各キーワードでAND検索を行います。
+        userGroupIdが指定された場合、そのグループに属するナレッジデータのみを検索します（全社共通は含まれません）。
+        userGroupIdがnullまたは指定されない場合は、全社共通のナレッジデータのみを検索します。
+      operationId: processKnowledgeSearch
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - keywords
+                - tenant_id
+              properties:
+                keywords:
+                  type: string
+                  description: 検索キーワード（カンマ区切りの文字列 例：「キーワード1, キーワード2」）
+                  example: "QT-GenAI, サービス, 特徴"
+                tenant_id:
+                  type: string
+                  description: テナントID（必須）
+                  example: "123e4567-e89b-12d3-a456-426614174000"
+                user_group_id:
+                  type: string
+                  nullable: true
+                  description: ユーザーグループID（任意、カンマ区切り文字列 例："id1, id2"）。指定しないかnullの場合は全社共通ナレッジを検索。
+                  example: "abcdef12-3456-7890-abcd-ef1234567890, fedcba98-7654-3210-fedc-ba9876543210"
+                knowledge_group_id:
+                  type: string
+                  nullable: true
+                  description: ナレッジグループID（任意、カンマ区切り文字列 例："id1, id2"）
+                  example: "abcdef12-3456-7890-abcd-ef1234567890, fedcba98-7654-3210-fedc-ba9876543210"
+      responses:
+        '200':
+          description: 成功時のレスポンス
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          description: ナレッジデータのID
+                        title:
+                          type: string
+                          description: ナレッジデータのタイトル
+                        description:
+                          type: string
+                          description: ナレッジデータの説明
+                        data:
+                          type: string
+                          description: ナレッジデータの本文
+                        crawlerUrl:
+                          type: string
+                          description: クローラーで取得したURL（存在する場合）
+                        crawlerData:
+                          type: string
+                          description: クローラーで取得したデータ（存在する場合）
+                        storageFileUrl:
+                          type: string
+                          description: ストレージファイルのURL（存在する場合）
+                        storageFileData:
+                          type: string
+                          description: ストレージファイルのデータ（存在する場合）
+                        storageFileName:
+                          type: string
+                          description: ストレージファイルの名前（存在する場合）
+                        storageFileMimeType:
+                          type: string
+                          description: ストレージファイルのMIMEタイプ（存在する場合）
+        '400':
+          description: 不正なリクエスト
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "keywords パラメータは必須です"
+        '401':
+          description: 認証エラー
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "不正なトークンです"
+        '405':
+          description: 不正なメソッド
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "不正なメソッドです"
+        '500':
+          description: サーバーエラー
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "エラーが発生しました: データベース接続エラー"
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: APIアクセスのための認証トークン 

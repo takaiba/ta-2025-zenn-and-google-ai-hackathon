@@ -1,0 +1,81 @@
+version: "3.8"
+
+# 改善案1: 環境変数を整理した版
+services:
+  # Redis service
+  redis:
+    image: redis:7-alpine
+    container_name: ta-backend-ml-redis
+    ports:
+      - "${REDIS_PORT:-6379}:6379"  # .envから読み込み、デフォルト値付き
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ta-backend-network
+
+  # Django application
+  web:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    container_name: ta-backend-ml-web
+    command: /app/docker-entrypoint.sh web
+    image: ta-backend-ml:latest
+    working_dir: /app
+    volumes:
+      - type: bind
+        source: ./
+        target: /app
+    env_file:
+      - .env
+    environment:
+      # コンテナ間通信に必要な設定のみ明示的に指定
+      - REDIS_HOST=redis  # コンテナ名を使用
+      - REDIS_URL=redis://redis:6379/0  # 内部通信用URL
+    ports:
+      - "${WEB_PORT:-8000}:8000"
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - ta-backend-network
+
+  # Celery worker
+  celery_worker:
+    extends:
+      service: web  # webサービスの設定を継承
+    container_name: ta-backend-ml-celery-worker
+    command: /app/docker-entrypoint.sh worker
+    ports: []  # ポートは不要
+
+  # Celery beat (scheduler)
+  celery_beat:
+    extends:
+      service: web  # webサービスの設定を継承
+    container_name: ta-backend-ml-celery-beat
+    command: /app/docker-entrypoint.sh beat
+    ports: []  # ポートは不要
+
+  # Flower (Celery monitoring)
+  flower:
+    extends:
+      service: web  # webサービスの設定を継承
+    container_name: ta-backend-ml-flower
+    command: /app/docker-entrypoint.sh flower
+    ports:
+      - "${FLOWER_PORT:-5555}:5555"
+    depends_on:
+      - redis
+      - celery_worker
+
+volumes:
+  redis_data:
+
+networks:
+  ta-backend-network:
+    driver: bridge

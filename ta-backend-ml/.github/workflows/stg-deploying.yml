@@ -1,0 +1,39 @@
+name: docker-build-push [stg]
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    uses: ./.github/workflows/build-common.yml
+    with:
+      PROJECT_ID: ta-project-and-dot
+      GAR_LOCATION: asia-northeast1
+      GKE_CLUSTER: ta-cluster-202308261708
+      GKE_ZONE: asia-northeast1-a
+      NAMESPACE: stg-ta-projects
+      DEPLOY_ENV: stg
+      DEPLOYMENT_NAME: ta-backend-ml
+      REPOSITORY: common-repository
+      IMAGE: ta-backend-ml
+      SERVICE_ACCOUNT: workload-identity-github-sa@ta-project-and-dot.iam.gserviceaccount.com
+      WORKLOAD_IDENTITY_PROVIDER: projects/794880215231/locations/global/workloadIdentityPools/common-github-pool/providers/common-github-pool-provider
+      DEPLOY_DIRECTORY: ./
+
+  common-backend:
+    uses: ./.github/workflows/deploy-common.yml
+    needs: build
+    with:
+      PROJECT_ID: ta-project-and-dot
+      GAR_LOCATION: asia-northeast1
+      GKE_CLUSTER: ta-cluster-202308261708
+      GKE_ZONE: asia-northeast1-a
+      NAMESPACE: stg-ta-projects
+      DEPLOY_ENV: stg
+      DEPLOYMENT_NAME: ta-backend-ml
+      REPOSITORY: common-repository
+      IMAGE: ta-backend-ml
+      SERVICE_ACCOUNT: workload-identity-github-sa@ta-project-and-dot.iam.gserviceaccount.com
+      WORKLOAD_IDENTITY_PROVIDER: projects/794880215231/locations/global/workloadIdentityPools/common-github-pool/providers/common-github-pool-provider
+      DEPLOY_DIRECTORY: ./

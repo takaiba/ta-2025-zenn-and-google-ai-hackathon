@@ -1,0 +1,100 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended"
+  ],
+  "schedule": [
+    "every 1 hour after 00:00 and before 23:59 every day"
+  ],
+  "timezone": "Asia/Tokyo",
+  "prConcurrentLimit": 5,
+  "prHourlyLimit": 5,
+  "semanticCommits": "enabled",
+  "commitMessagePrefix": "build:",
+  "labels": [
+    "dependencies"
+  ],
+  "assignees": [
+    "@renovate"
+  ],
+  "reviewers": [],
+  "vulnerabilityAlerts": {
+    "enabled": true,
+    "commitMessageSuffix": " [SECURITY]",
+    "labels": [
+      "security",
+      "dependencies"
+    ],
+    "assignees": [
+      "@renovate"
+    ],
+    "schedule": [
+      "at any time"
+    ],
+    "prPriority": 10
+  },
+  "packageRules": [
+    {
+      "matchPackagePatterns": [
+        "*"
+      ],
+      "vulnerabilityAlerts": {
+        "enabled": true
+      },
+      "prPriority": 10,
+      "schedule": [
+        "at any time"
+      ],
+      "labels": [
+        "security",
+        "priority-high",
+        "dependencies"
+      ],
+      "commitMessageSuffix": " [SECURITY]",
+      "description": "セキュリティアップデートを最優先で処理"
+    },
+    {
+      "matchUpdateTypes": [
+        "minor",
+        "patch"
+      ],
+      "groupName": "Minor and Patch Updates",
+      "automerge": false,
+      "automergeType": "pr",
+      "prPriority": 1
+    },
+    {
+      "matchUpdateTypes": [
+        "major"
+      ],
+      "automerge": false,
+      "labels": [
+        "major-update",
+        "dependencies"
+      ],
+      "prPriority": 2
+    },
+    {
+      "matchDepTypes": [
+        "devDependencies"
+      ],
+      "automerge": false,
+      "labels": [
+        "dev-dependencies"
+      ],
+      "prPriority": 0
+    }
+  ],
+  "lockFileMaintenance": {
+    "enabled": true,
+    "schedule": [
+      "every 1 hour after 00:00 and before 23:59 every day"
+    ],
+    "commitMessageAction": "Update",
+    "commitMessageTopic": "lock file dependencies"
+  },
+  "dependencyDashboard": true,
+  "dependencyDashboardTitle": "📦 Dependency Updates",
+  "dependencyDashboardHeader": "このダッシュボードは、リポジトリの依存関係の更新状況を表示します。",
+  "dependencyDashboardFooter": "設定の詳細については、[Renovate Docs](https://docs.renovatebot.com/) を参照してください。"
+}

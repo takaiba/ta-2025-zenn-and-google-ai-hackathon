@@ -1,0 +1,9 @@
+ruff-lsp
+black
+pre-commit
+mypy
+pytest
+pytest-asyncio
+python-lsp-server
+pook
+pytest-mock==3.14.0

@@ -1,0 +1,191 @@
+services:
+  # Redis service
+  redis:
+    image: redis:7-alpine
+    container_name: ta-backend-ml-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ta-backend-network
+
+  # Django application
+  web:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    container_name: ta-backend-ml-web
+    command: web
+    image: ta-backend-ml:latest
+    working_dir: /app
+    volumes:
+      - type: bind
+        source: ./
+        target: /app
+    env_file:
+      - .env
+    environment:
+      # Redis接続設定（内部通信用）
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_URL=redis://redis:6379/0
+    ports:
+      - "8000:8000"
+    depends_on:
+      redis:
+        condition: service_healthy
+    extra_hosts:
+      - "host.docker.internal:host-gateway"  # Linuxでもhost.docker.internalを使えるように
+    networks:
+      - ta-backend-network
+
+  # Celery worker
+  celery_worker:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    container_name: ta-backend-ml-celery-worker
+    command: worker
+    image: ta-backend-ml:latest
+    working_dir: /app
+    volumes:
+      - type: bind
+        source: ./
+        target: /app
+    env_file:
+      - .env
+    environment:
+      # Redis接続設定（内部通信用）
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_URL=redis://redis:6379/0
+    depends_on:
+      redis:
+        condition: service_healthy
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - ta-backend-network
+
+  # Celery beat (scheduler)
+  celery_beat:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    container_name: ta-backend-ml-celery-beat
+    command: beat
+    image: ta-backend-ml:latest
+    working_dir: /app
+    volumes:
+      - type: bind
+        source: ./
+        target: /app
+    env_file:
+      - .env
+    environment:
+      # Redis接続設定（内部通信用）
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_URL=redis://redis:6379/0
+    depends_on:
+      redis:
+        condition: service_healthy
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - ta-backend-network
+
+  # Flower (Celery monitoring)
+  flower:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    container_name: ta-backend-ml-flower
+    command: flower
+    image: ta-backend-ml:latest
+    working_dir: /app
+    volumes:
+      - type: bind
+        source: ./
+        target: /app
+    env_file:
+      - .env
+    environment:
+      # Redis接続設定（内部通信用）
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_URL=redis://redis:6379/0
+    ports:
+      - "5555:5555"
+    depends_on:
+      - redis
+      - celery_worker
+    networks:
+      - ta-backend-network
+
+  # JobQueue processor (temporary solution)
+  job_processor:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    container_name: ta-backend-ml-job-processor
+    entrypoint: /bin/bash
+    command: -c "while true; do cd /app/project && python simple_job_processor.py 2>/dev/null; sleep 10; done"
+    image: ta-backend-ml:latest
+    working_dir: /app
+    volumes:
+      - type: bind
+        source: ./
+        target: /app
+    env_file:
+      - .env
+    depends_on:
+      - web
+      - redis
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - ta-backend-network
+
+  # WebSocket server for realtime test monitoring (temporarily disabled)
+  # websocket_server:
+  #   build:
+  #     context: .
+  #     dockerfile: ./Dockerfile
+  #   container_name: ta-backend-ml-websocket
+  #   command: websocket
+  #   image: ta-backend-ml:latest
+  #   working_dir: /app
+  #   volumes:
+  #     - type: bind
+  #       source: ./
+  #       target: /app
+  #   env_file:
+  #     - .env
+  #   environment:
+  #     # Redis接続設定（内部通信用）
+  #     - REDIS_HOST=redis
+  #     - REDIS_PORT=6379
+  #     - REDIS_URL=redis://redis:6379/0
+  #   ports:
+  #     - "8765:8765"
+  #   depends_on:
+  #     redis:
+  #       condition: service_healthy
+  #   extra_hosts:
+  #     - "host.docker.internal:host-gateway"
+  #   networks:
+  #     - ta-backend-network
+
+volumes:
+  redis_data:
+
+networks:
+  ta-backend-network:
+    driver: bridge

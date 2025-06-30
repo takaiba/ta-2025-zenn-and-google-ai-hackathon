@@ -1,0 +1,28 @@
+name: Create pull request[main into prd]
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  create-release-pr:
+    runs-on: self-hosted
+    env:
+      TZ: "Asia/Tokyo"
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.2"
+
+      - name: Create a release pull request
+        env:
+          GIT_PR_RELEASE_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GIT_PR_RELEASE_BRANCH_PRODUCTION: deploy/prd
+          GIT_PR_RELEASE_BRANCH_STAGING: main
+          GIT_PR_RELEASE_TEMPLATE: .github/pull_request_template_for_prd_branch_from_main.erb
+        run: |
+          gem install -N git-pr-release
+          git-pr-release --overwrite-description

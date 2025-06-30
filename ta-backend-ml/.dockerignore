@@ -1,0 +1,58 @@
+outputs/*
+
+# 開発環境関連
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.env
+.venv
+.coverage
+coverage/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+htmlcov/
+.tox/
+.nox/
+
+# バージョン管理システム
+.git/
+.gitignore
+.github/
+
+# エディタ設定
+.idea/
+.vscode/
+*.swp
+*.swo
+.cursor/
+
+# ドキュメント
+docs/
+*.md
+LICENSE
+
+# ログ・一時ファイル
+*.log
+*.tmp
+output/
+output.log
+
+# キャッシュディレクトリ
+.cache/
+node_modules/
+
+# 音声ファイル
+audio_for_dialize.wav/
+audio_for_dialize.mp3/
+
+# その他
+adhoc-batch/
+dify-yml-archive/
+.pre-commit-config.yaml
+_typos.toml
+test.py

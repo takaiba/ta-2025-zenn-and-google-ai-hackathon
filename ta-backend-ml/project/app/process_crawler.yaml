@@ -1,0 +1,148 @@
+openapi: 3.0.0
+info:
+  title: Process Crawler API
+  version: 1.0.0
+  description: API for web crawling and content extraction
+
+servers:
+  - url: http://localhost:8000/api/v1/dify
+    description: Local development server
+
+paths:
+  /process_crawler:
+    post:
+      summary: Process web crawling request
+      description: Initiates a web crawling process with specified parameters
+      operationId: processCrawler
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CrawlerRequest'
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CrawlerResponse'
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+    CrawlerRequest:
+      type: object
+      required:
+        - url
+      properties:
+        url:
+          type: string
+          format: uri
+          example: https://example.com
+        excludePaths:
+          type: array
+          items:
+            type: string
+          example: ["/about", "/contact"]
+        includePaths:
+          type: array
+          items:
+            type: string
+          example: ["/blog", "/news"]
+        maxDepth:
+          type: integer
+          minimum: 1
+          maximum: 5
+          default: 2
+        limit:
+          type: integer
+          minimum: 1
+          maximum: 10000
+          default: 10000
+        scrapeOptions:
+          $ref: '#/components/schemas/ScrapeOptions'
+    
+    ScrapeOptions:
+      type: object
+      properties:
+        formats:
+          type: array
+          items:
+            type: string
+            enum: [markdown, html]
+          example: [markdown]
+        headers:
+          type: object
+          additionalProperties:
+            type: string
+        includeTags:
+          type: array
+          items:
+            type: string
+          example: ["h1", "h2", "p"]
+        excludeTags:
+          type: array
+          items:
+            type: string
+          example: ["script", "style"]
+        onlyMainContent:
+          type: boolean
+          default: true
+        removeBase64Images:
+          type: boolean
+          default: true
+        mobile:
+          type: boolean
+          default: false
+        waitFor:
+          type: integer
+          minimum: 0
+    
+    CrawlerResponse:
+      type: object
+      properties:
+        url:
+          type: string
+          format: uri
+        pages:
+          type: array
+          items:
+            $ref: '#/components/schemas/PageData'
+        status:
+          type: string
+          enum: [pending, completed]
+    
+    PageData:
+      type: object
+      properties:
+        url:
+          type: string
+          format: uri
+        content:
+          type: object
+          properties:
+            markdown:
+              type: string
+        links:
+          type: array
+          items:
+            type: string
+            format: uri
+    
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
