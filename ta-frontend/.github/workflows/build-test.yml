@@ -1,0 +1,17 @@
+name: Build and Test Docker Image
+
+on:
+  push:
+
+jobs:
+  build:
+    uses: ./.github/workflows/build.yml
+    with:
+      PROJECT_ID: ta-project-and-dot
+      GAR_LOCATION: asia-northeast1
+      GKE_ZONE: asia-northeast1-a
+      DEPLOYMENT_NAME: ta-frontend
+      REPOSITORY: common-repository
+      IMAGE: ta-frontend
+      SERVICE_ACCOUNT: workload-identity-github-sa@ta-project-and-dot.iam.gserviceaccount.com
+      WORKLOAD_IDENTITY_PROVIDER: projects/794880215231/locations/global/workloadIdentityPools/common-github-pool/providers/common-github-pool-provider

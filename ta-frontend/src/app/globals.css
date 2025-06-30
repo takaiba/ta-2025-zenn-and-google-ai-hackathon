@@ -1,0 +1,109 @@
+@import "tailwindcss";
+
+/* Base-UI用のclass */
+.Root {
+  isolation: isolate;
+}
+
+@theme {
+  --color-text-main: #171717;
+  --color-text-description: #a3a3a3;
+  --color-text-title: #484848;
+  --color-text-placeholder: #d4d4d4;
+  --color-text-alert: #bc2626;
+  --color-bg-grey: #f5f5f5;
+  --color-bg-white: #ffffff;
+  --color-bg-select: #e5e5e5;
+  --color-bg-yellow: #fde047;
+  --color-bg-darkGrey: #1e293b;
+  --color-bg-lightGrey: #fafafa;
+  --color-bg-blue: #2b7fff;
+  --color-bg-lightBlue: #eff6ff;
+  --color-bg-red: #f87171;
+  --color-bg-black: #000000;
+  --color-bg-black30: rgba(0, 0, 0, 0.3);
+  --color-bg-white30: rgba(255, 255, 255, 0.3);
+  --color-border-grey: #eaeaea;
+  --color-border-blue: #60a5fa;
+  --shadow-1: 0 4px 8px 0 rgba(17, 17, 26, 0.1);
+}
+
+@layer base {
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+}
+
+.markdown {
+  @apply text-text-title flex flex-col text-sm break-words whitespace-break-spaces;
+}
+
+.markdown strong {
+  @apply font-semibold;
+}
+
+.markdown a {
+  @apply font-semibold text-blue-600;
+}
+
+.markdown strong a {
+  @apply font-bold;
+}
+
+.markdown h1,
+.markdown h2,
+.markdown h3,
+.markdown h4,
+.markdown h5,
+.markdown h6 {
+  @apply py-2 text-lg leading-none font-bold tracking-wider;
+}
+
+.markdown p {
+  @apply text-sm leading-6;
+}
+
+.markdown blockquote {
+  @apply border-border-grey text-text-title border-l-4 px-4 text-sm leading-0.5;
+}
+
+.markdown code {
+  @apply bg-bg-select rounded-xs p-1 text-sm;
+}
+
+.markdown pre {
+  @apply rounded bg-gray-100 p-4;
+}
+
+.markdown pre code {
+  @apply block overflow-visible rounded-none bg-transparent p-0;
+}
+
+.markdown ul {
+  @apply flex list-disc flex-col py-2 pl-8 text-sm whitespace-normal;
+}
+
+.markdown ol {
+  @apply flex list-decimal flex-col py-2 pl-8 text-sm whitespace-normal;
+}
+
+.markdown li {
+  @apply text-sm leading-6;
+}
+
+.markdown kbd {
+  @apply inline-block rounded border px-1 py-5 align-middle font-mono text-xs font-normal shadow;
+}
+
+.markdown table {
+  @apply border-gray-600 text-sm;
+}
+
+.markdown th {
+  @apply border-border-grey bg-bg-select text-text-title border px-3 py-1;
+}
+
+.markdown td {
+  @apply border-border-grey bg-bg-white text-text-title border px-3 py-1;
+}

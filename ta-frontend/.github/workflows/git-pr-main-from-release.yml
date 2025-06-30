@@ -1,0 +1,37 @@
+name: Create pull request[release into main]
+
+on:
+  push:
+    branches:
+      - release
+
+jobs:
+  create-release-pr:
+    runs-on: ubuntu-latest
+    env:
+      TZ: "Asia/Tokyo"
+    steps:
+      - uses: actions/checkout@v3
+
+      # TODO: このジョブはself-hostedで実行できないことがわかっている。直せたら直したい。
+      # https://github.com/takaiba/ta-frontend/actions/runs/14866829151/job/41746405255?pr=307
+      # Error: The current runner (ubuntu-20.04-x64) was detected as self-hosted because the self-hosted input was set.
+      # In such a case, you should install Ruby in the $RUNNER_TOOL_CACHE yourself, for example using https://github.com/rbenv/ruby-build
+      # You can take inspiration from this workflow for more details: https://github.com/ruby/ruby-builder/blob/master/.github/workflows/build.yml
+      # $ ruby-build 3.2 /opt/hostedtoolcache/Ruby/3.2/x64
+      # Once that completes successfully, mark it as complete with:
+      # $ touch /opt/hostedtoolcache/Ruby/3.2/x64.complete
+      # It is your responsibility to ensure installing Ruby like that is not done in parallel.
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.2"
+
+      - name: Create a release pull request
+        env:
+          GIT_PR_RELEASE_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GIT_PR_RELEASE_BRANCH_PRODUCTION: main
+          GIT_PR_RELEASE_BRANCH_STAGING: release
+          GIT_PR_RELEASE_TEMPLATE: .github/pull_request_template_for_main_branch_from_release.erb
+        run: |
+          gem install -N git-pr-release
+          git-pr-release --overwrite-description

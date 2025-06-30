@@ -1,0 +1,1 @@
+export { TestReportDetailArea } from "./container";

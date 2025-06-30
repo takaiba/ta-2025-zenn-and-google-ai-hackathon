@@ -1,0 +1,77 @@
+{
+  "extends": [
+    "eslint:recommended",
+    "plugin:@typescript-eslint/recommended-type-checked",
+    "next/core-web-vitals",
+    "prettier"
+  ],
+  "plugins": ["unused-imports"],
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "project": "./tsconfig.json"
+  },
+  // SentryのためにjsxファイルをignorePatternに追加している
+  "ignorePatterns": ["**/*.jsx"],
+  "rules": {
+    // voidのreturnが想定される関数においてPromise<void>を許容する
+    "@typescript-eslint/no-misused-promises": [
+      "warn",
+      {
+        "checksVoidReturn": false
+      }
+    ],
+    // 未使用変数の定義を禁止するが、_で始まる変数は無視する
+    "@typescript-eslint/no-unused-vars": [
+      "error",
+      {
+        "argsIgnorePattern": "^_",
+        "varsIgnorePattern": "^_",
+        "caughtErrorsIgnorePattern": "^_",
+        "destructuredArrayIgnorePattern": "^_"
+      }
+    ],
+    // 未使用のimportを禁止する
+    "unused-imports/no-unused-imports": "error",
+    // importの順番を制限する
+    "import/order": [
+      "error",
+      {
+        "groups": [
+          "builtin",
+          "external",
+          "internal",
+          "parent",
+          "sibling",
+          "index",
+          "object",
+          "type"
+        ],
+        "newlines-between": "always",
+        "pathGroupsExcludedImportTypes": ["builtin"],
+        "pathGroups": [
+          {
+            "pattern": "@/components/**",
+            "group": "internal",
+            "position": "before"
+          }
+        ],
+        "alphabetize": {
+          "order": "asc"
+        }
+      }
+    ],
+    // JSXの中で{}を使う際に、propsには{}を使うが、childrenには{}を使わない
+    "react/jsx-curly-brace-presence": [
+      "error",
+      { "props": "always", "children": "never" }
+    ],
+    // ビルドを通すために一旦warnに変更。errorに戻すかは要検討
+    "@typescript-eslint/no-unsafe-call": "warn",
+    "@typescript-eslint/no-unsafe-member-access": "warn",
+    "@typescript-eslint/no-unsafe-return": "warn",
+    "@typescript-eslint/no-unsafe-assignment": "warn",
+    "@typescript-eslint/no-unsafe-argument": "warn",
+    "@typescript-eslint/unbound-method": "warn",
+    "@typescript-eslint/prefer-nullish-coalescing": "off"
+  }
+}

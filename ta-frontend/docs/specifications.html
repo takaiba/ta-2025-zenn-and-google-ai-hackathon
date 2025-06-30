@@ -1,0 +1,1771 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QA³ ユーザー向け仕様書・開発ロードマップ v3.1</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+
+  <style>
+    body {
+      font-family: 'Inter', 'Noto Sans JP', sans-serif;
+      background-color: #f8fafc;
+    }
+
+    /* サイドバー用のスタイル */
+    .sidebar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 300px;
+      height: 100vh;
+      background: linear-gradient(180deg, #1e293b 0%, #334155 100%);
+      color: white;
+      z-index: 1000;
+      overflow-y: auto;
+      box-shadow: 4px 0 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .main-content {
+      margin-left: 300px;
+      min-height: 100vh;
+    }
+
+    .sidebar a {
+      transition: all 0.2s ease;
+    }
+
+    .sidebar a:hover {
+      background-color: rgba(255, 255, 255, 0.1);
+      transform: translateX(4px);
+    }
+
+    .sidebar a.active {
+      background-color: #10b981;
+    }
+
+    details>summary {
+      list-style: none;
+    }
+
+    details>summary::-webkit-details-marker {
+      display: none;
+    }
+
+    details[open] summary .arrow {
+      transform: rotate(90deg);
+    }
+
+    .arrow {
+      transition: transform 0.2s ease-in-out;
+    }
+
+    .mockup {
+      border: 1px solid #e2e8f0;
+      border-radius: 0.75rem;
+      background-color: #ffffff;
+      box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 10px 10px -5px rgb(0 0 0 / 0.04);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      min-height: 400px;
+      max-height: 600px;
+      margin: 2rem auto;
+      max-width: 1000px;
+    }
+
+    .mockup-header {
+      display: flex;
+      align-items: center;
+      padding: 0.75rem 1rem;
+      background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+      border-bottom: 1px solid #e2e8f0;
+      backdrop-filter: blur(10px);
+    }
+
+    .mockup-header .dots {
+      display: flex;
+      gap: 0.25rem;
+    }
+
+    .mockup-header .dot {
+      width: 0.75rem;
+      height: 0.75rem;
+      border-radius: 9999px;
+    }
+
+    .mockup-url-bar {
+      flex-grow: 1;
+      margin: 0 1rem;
+      background-color: #fff;
+      color: #475569;
+      font-size: 0.75rem;
+      padding: 0.375rem 0.75rem;
+      border-radius: 0.375rem;
+      border: 1px solid #cbd5e1;
+      box-shadow: inset 0 1px 2px 0 rgb(0 0 0 / 0.05);
+      font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+    }
+
+    .live-test-indicator {
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    @media (max-width: 1024px) {
+      .sidebar {
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+      }
+
+      .sidebar.open {
+        transform: translateX(0);
+      }
+
+      .main-content {
+        margin-left: 0;
+      }
+    }
+  </style>
+</head>
+
+<body class="text-slate-800">
+  <!-- Fixed Sidebar -->
+  <nav class="sidebar">
+    <div class="p-6 border-b border-slate-600">
+      <h2 class="text-xl font-bold text-emerald-400">QA³ 仕様書 v3.0</h2>
+      <p class="text-sm text-slate-300 mt-1">Developer Documentation</p>
+
+      <!-- 切り替えボタン -->
+      <div class="mt-4 flex gap-2">
+        <button class="flex-1 bg-emerald-600 text-white px-3 py-2 rounded text-xs font-semibold">
+          開発者向け
+        </button>
+        <button onclick="window.location.href='business.html'" class="flex-1 bg-slate-600 text-slate-300 px-3 py-2 rounded text-xs hover:bg-slate-500">
+          ビジネス向け
+        </button>
+      </div>
+    </div>
+
+    <div class="p-4">
+      <div class="mb-4">
+        <h3 class="text-xs font-bold uppercase tracking-widest text-slate-400 mb-2">概要・アーキテクチャ</h3>
+        <ul class="space-y-1 text-sm">
+          <li><a href="#overview" class="block px-3 py-2 rounded hover:bg-slate-600">🎯 サービス概要</a></li>
+          <li><a href="#architecture" class="block px-3 py-2 rounded hover:bg-slate-600">🏗️ 技術アーキテクチャ</a></li>
+        </ul>
+      </div>
+
+      <div class="mb-4">
+        <h3 class="text-xs font-bold uppercase tracking-widest text-slate-400 mb-2">開発フェーズ</h3>
+        <ul class="space-y-1 text-sm">
+          <li><a href="#phase1" class="block px-3 py-2 rounded hover:bg-slate-600">🔧 Phase 1: MVP</a></li>
+          <li><a href="#phase2" class="block px-3 py-2 rounded hover:bg-slate-600">🚀 Phase 2: 機能拡張</a></li>
+          <li><a href="#phase3" class="block px-3 py-2 rounded hover:bg-slate-600">🌐 Phase 3: エコシステム連携</a></li>
+        </ul>
+      </div>
+
+      <div class="mb-4">
+        <h3 class="text-xs font-bold uppercase tracking-widest text-slate-400 mb-2">技術仕様</h3>
+        <ul class="space-y-1 text-sm">
+          <li><a href="#test-execution" class="block px-3 py-2 rounded hover:bg-slate-600">📊 テスト実行仕様</a></li>
+          <li><a href="#test-modes" class="block px-3 py-2 rounded hover:bg-slate-600">💡 テストモード詳細</a></li>
+          <li><a href="#security" class="block px-3 py-2 rounded hover:bg-slate-600">🔒 セキュリティ仕様</a></li>
+          <li><a href="#api-spec" class="block px-3 py-2 rounded hover:bg-slate-600">📱 API仕様</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h3 class="text-xs font-bold uppercase tracking-widest text-slate-400 mb-2">リファレンス</h3>
+        <ul class="space-y-1 text-sm">
+          <li><a href="#glossary" class="block px-3 py-2 rounded hover:bg-slate-600">📚 用語集</a></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <div class="container mx-auto p-4 md:p-8">
+
+      <!-- Header -->
+      <header class="text-center mb-16" id="top">
+        <h1 class="text-4xl md:text-6xl font-bold text-slate-900">
+          QA³ <span class="text-emerald-500">|</span> <span class="font-normal text-3xl md:text-5xl text-slate-600">Developer</span>
+        </h1>
+        <p class="mt-4 text-xl text-slate-500">AIテスト自動化プラットフォーム 開発者向け仕様書 v3.0</p>
+        <div class="mt-8 text-slate-600 max-w-4xl mx-auto space-y-4">
+          <p class="text-lg">この開発者向け仕様書は、AIテスト自動化プラットフォーム「QA³」の技術仕様、アーキテクチャ、実装計画を詳細に解説します。システムの品質保証を完全自動化し、開発チームの生産性を飛躍的に向上させる革新的ソリューションです。</p>
+          <div class="flex justify-center gap-4 mt-6">
+            <a href="https://takaiba.github.io/demo-site.github.io/qa3-lp/" target="_blank" rel="noopener noreferrer"
+              class="inline-block bg-emerald-600 text-white font-semibold py-3 px-8 rounded-full hover:bg-emerald-700 transition-colors">
+              🚀 デモを体験する
+            </a>
+            <a href="business.html"
+              class="inline-block bg-white text-emerald-600 font-semibold py-3 px-8 border border-emerald-300 rounded-full hover:bg-emerald-50 transition-colors">
+              💼 ビジネス情報を見る
+            </a>
+          </div>
+        </div>
+      </header>
+
+      <!-- Service Overview Section -->
+      <section id="overview" class="mb-20">
+        <div class="mb-12">
+          <h2 class="text-sm font-bold uppercase tracking-widest text-emerald-600">Service Overview</h2>
+          <p class="mt-1 text-4xl font-bold text-slate-800">🎯 サービス概要</p>
+          <p class="mt-3 text-lg text-slate-600 max-w-4xl">QA³は、AIが自律的にWebアプリケーションをテストし、バグを発見・報告する革新的プラットフォームです。</p>
+        </div>
+
+        <!-- QA3の4つの柱 -->
+        <div class="grid md:grid-cols-2 gap-8 mb-12">
+          <div class="bg-white rounded-xl p-8 shadow-lg border border-slate-200">
+            <div class="flex items-center mb-4">
+              <div class="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center">
+                <span class="text-2xl">🤖</span>
+              </div>
+              <h3 class="text-xl font-bold ml-4">1. 自律的な品質検証</h3>
+            </div>
+            <p class="text-slate-600 mb-4">準備やセッティングは不要。AIが自ら「どこを検証すべきか」を学習し、自律的にテストを開始します。</p>
+            <ul class="text-sm text-slate-500 space-y-1">
+              <li>• シナリオ性とランダム性の両立</li>
+              <li>• 機械学習による継続的な学習</li>
+              <li>• エッジケースの自動発見</li>
+            </ul>
+          </div>
+
+          <div class="bg-white rounded-xl p-8 shadow-lg border border-slate-200">
+            <div class="flex items-center mb-4">
+              <div class="w-12 h-12 bg-sky-100 rounded-xl flex items-center justify-center">
+                <span class="text-2xl">📋</span>
+              </div>
+              <h3 class="text-xl font-bold ml-4">2. PMが見てもわかりやすいレポート</h3>
+            </div>
+            <p class="text-slate-600 mb-4">どのような検証をしたのか／不具合再現方法／スクリーンショット／緊急度／原因の予想を含むレポートを自動生成。</p>
+            <ul class="text-sm text-slate-500 space-y-1">
+              <li>• 自動スクリーンショット撮影</li>
+              <li>• 詳細な再現手順</li>
+              <li>• AIによる重要度判定</li>
+            </ul>
+          </div>
+
+          <div class="bg-white rounded-xl p-8 shadow-lg border border-slate-200">
+            <div class="flex items-center mb-4">
+              <div class="w-12 h-12 bg-violet-100 rounded-xl flex items-center justify-center">
+                <span class="text-2xl">🔗</span>
+              </div>
+              <h3 class="text-xl font-bold ml-4">3. シームレスなツール連携</h3>
+            </div>
+            <p class="text-slate-600 mb-4">CI/CD、AIコーディングツール（Cursorがメイン）と連携し、検知された不具合に対して自動でPRを作成。</p>
+            <ul class="text-sm text-slate-500 space-y-1">
+              <li>• GitHub Actions / Jenkins連携</li>
+              <li>• Cursor自動PR作成</li>
+              <li>• 品質ゲート機能</li>
+            </ul>
+          </div>
+
+          <div class="bg-white rounded-xl p-8 shadow-lg border border-slate-200">
+            <div class="flex items-center mb-4">
+              <div class="w-12 h-12 bg-amber-100 rounded-xl flex items-center justify-center">
+                <span class="text-2xl">🎯</span>
+              </div>
+              <h3 class="text-xl font-bold ml-4">4. 高精度な不具合発見</h3>
+            </div>
+            <p class="text-slate-600 mb-4">ソースコード（GitHubリポジトリ）や操作マニュアル／仕様書が提供されると、AIがより精度高くシナリオを生成・実行。</p>
+            <ul class="text-sm text-slate-500 space-y-1">
+              <li>• ソースコード解析</li>
+              <li>• 仕様書理解</li>
+              <li>• 自動質問書発行</li>
+            </ul>
+          </div>
+        </div>
+
+      <!-- Technical Architecture -->
+      <section id="architecture" class="mb-20">
+        <div class="mb-12">
+          <h2 class="text-sm font-bold uppercase tracking-widest text-sky-600">Technical Architecture</h2>
+          <p class="mt-1 text-4xl font-bold text-slate-800">🏗️ 技術アーキテクチャ</p>
+          <p class="mt-3 text-lg text-slate-600 max-w-4xl">QA³のシステム構成と技術スタックの詳細です。</p>
+        </div>
+
+        <div class="bg-white rounded-xl p-8 shadow-lg border border-slate-200 mb-8">
+          <h3 class="text-xl font-bold mb-6">システム構成図</h3>
+          <div class="bg-slate-50 p-6 rounded-lg" style="aspect-ratio: 16/9;">
+            <div class="text-center text-slate-500 py-12">
+              [システム構成図: フロントエンド (React/Next.js) → API Gateway → AIエージェント (Python/Playwright) → データベース (PostgreSQL) → 外部連携 (GitHub/Slack/Jira)]
+            </div>
+          </div>
+        </div>
+
+        <div class="grid md:grid-cols-3 gap-8">
+          <div class="bg-white rounded-xl p-6 shadow-lg border border-slate-200">
+            <h4 class="text-lg font-bold mb-4">フロントエンド</h4>
+            <ul class="space-y-2 text-sm text-slate-600">
+              <li>• <strong>React 18</strong> - UIライブラリ</li>
+              <li>• <strong>Next.js 14</strong> - フルスタックフレームワーク</li>
+              <li>• <strong>TypeScript</strong> - 型安全性</li>
+              <li>• <strong>Tailwind CSS</strong> - スタイリング</li>
+              <li>• <strong>WebSocket</strong> - リアルタイム通信</li>
+            </ul>
+          </div>
+
+          <div class="bg-white rounded-xl p-6 shadow-lg border border-slate-200">
+            <h4 class="text-lg font-bold mb-4">バックエンド</h4>
+            <ul class="space-y-2 text-sm text-slate-600">
+              <li>• <strong>Next.js 14</strong> - フルスタックフレームワーク</li>
+              <li>• <strong>Prisma</strong> - ORM・データベース管理</li>
+              <li>• <strong>tRPC</strong> - エンドツーエンド型安全API</li>
+              <li>• <strong>PostgreSQL</strong> - データベース</li>
+            </ul>
+          </div>
+
+          <div class="bg-white rounded-xl p-6 shadow-lg border border-slate-200">
+            <h4 class="text-lg font-bold mb-4">テストエージェント</h4>
+            <ul class="space-y-2 text-sm text-slate-600">
+              <li>• <strong>Playwright</strong> - ブラウザ自動化エンジン</li>
+              <li>• <strong>LLM</strong> - Google/OpenAI/AnthropicなどのLLM</li>
+              <li>• <strong>n8n</strong> - ワークフロー定義、SaaS連携</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- Phase 1: MVP -->
+      <section id="phase1" class="mb-20">
+        <div class="mb-8">
+          <h2 class="text-sm font-bold uppercase tracking-widest text-emerald-600">Phase 1</h2>
+          <p class="mt-1 text-4xl font-bold text-slate-800">🔧 MVP: コア体験の提供</p>
+          <p class="mt-3 text-lg text-slate-600 max-w-3xl">QA³の核となる価値「AIによるテスト自動化とバグ報告」を体験していただくための最小限の機能を実装します。単一ページでの「おまかせ」モードによる自律的テストが中心となります。</p>
+        </div>
+
+        <div class="space-y-4">
+          <details class="bg-white rounded-lg border border-slate-200 shadow-sm transition-all duration-300 overflow-hidden" open>
+            <summary class="p-6 cursor-pointer">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                  <span class="text-2xl font-bold text-emerald-500/50 mr-4">1.1</span>
+                  <h3 class="text-lg font-semibold">プロジェクト作成とテスト設定</h3>
+                </div>
+                <svg class="arrow w-5 h-5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                </svg>
+              </div>
+              <p class="ml-12 mt-1 text-slate-500 text-sm">テスト対象URL（単一ページ）、テストタイプ、サービス説明を設定し、新しいテストセッションを開始</p>
+            </summary>
+            <div class="px-6 pb-6">
+              <div class="ml-12 mt-4 pt-4 border-t border-slate-200">
+                <div class="mb-4">
+                  <div class="text-xs text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full inline-block mb-3">
+                    🎨 実装予定のUIコンポーネント
+                  </div>
+                </div>
+                <div class="mockup mb-8 mx-4">
+                  <div class="mockup-header">
+                    <div class="dots">
+                      <div class="dot bg-red-400"></div>
+                      <div class="dot bg-yellow-400"></div>
+                      <div class="dot bg-green-400"></div>
+                    </div>
+                    <div class="mockup-url-bar">https://qa3.app/projects/1/sessions/new</div>
+                  </div>
+                  <div class="p-4 flex-1 overflow-y-auto">
+                    <h4 class="font-bold text-slate-900 text-base mb-4 sticky top-0 bg-white pb-2">📱 新規テストセッション作成フォーム</h4>
+                    <div class="space-y-4 text-sm">
+                      <div>
+                        <label class="font-medium text-slate-700">テスト対象URL</label>
+                        <input type="text" value="https://example-staging.com" class="mt-1 p-2 w-full border rounded bg-white text-slate-700">
+                      </div>
+                      <div>
+                        <label class="font-medium text-slate-700">テストタイプ</label>
+                        <div class="mt-1 grid grid-cols-3 gap-2">
+                          <div class="p-2 border rounded text-center bg-emerald-100 border-emerald-300 text-emerald-800 font-semibold">おまかせ</div>
+                          <div class="p-2 border rounded text-center bg-slate-200 text-slate-400 cursor-not-allowed opacity-50">シナリオ</div>
+                          <div class="p-2 border rounded text-center bg-slate-200 text-slate-400 cursor-not-allowed opacity-50">ハイブリッド</div>
+                        </div>
+                        <div class="mt-1 text-xs text-slate-500">Phase 2で シナリオ・ハイブリッドモードが利用可能になります</div>
+                      </div>
+                      <div>
+                        <label class="font-medium text-slate-700">サービス・ページの説明（LLMコンテキスト）</label>
+                        <textarea class="mt-1 p-2 w-full border rounded bg-white text-slate-700 text-xs h-20" placeholder="このページまたはサービスについて説明してください。LLMがより適切なテストを実行するために使用されます。例：ECサイトの商品詳細ページです。商品名、価格、在庫状況、カートボタンが表示されています。"># ECサイトの商品詳細ページ
+商品名、価格、在庫状況、レビューが表示される。
+カートに追加ボタン、お気に入り追加ボタンがある。
+ログイン状態によって表示が変わる可能性がある。</textarea>
+                      </div>
+                      <div>
+                        <label class="font-medium text-slate-700">環境変数</label>
+                        <div class="mt-1 space-y-2">
+                          <div class="flex gap-2">
+                            <input type="text" value="BASE_URL" class="p-1.5 w-1/3 border rounded bg-slate-50 font-mono text-xs">
+                            <input type="text" value="https://staging.example.com" class="p-1.5 w-2/3 border rounded bg-white font-mono text-xs">
+                          </div>
+                          <div class="flex gap-2">
+                            <input type="text" value="LOGIN_ID" class="p-1.5 w-1/3 border rounded bg-slate-50 font-mono text-xs">
+                            <input type="text" value="test.user@example.com" class="p-1.5 w-2/3 border rounded bg-white font-mono text-xs">
+                          </div>
+                          <div class="flex gap-2">
+                            <input type="text" value="PASSWORD" class="p-1.5 w-1/3 border rounded bg-slate-50 font-mono text-xs">
+                            <input type="password" value="secretpassword123" class="p-1.5 w-2/3 border rounded bg-white font-mono text-xs">
+                          </div>
+                        </div>
+                        <button class="text-emerald-600 text-xs font-semibold mt-2 hover:underline">+ 変数を追加</button>
+                      </div>
+                      <div class="sticky bottom-0 bg-white pt-3">
+                        <button class="w-full bg-emerald-500 text-white font-bold py-2.5 rounded-lg hover:bg-emerald-600 transition-colors">🚀 テスト開始</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <h4 class="font-semibold mb-2 text-base">機能仕様</h4>
+                <ul class="list-disc list-inside text-slate-600 text-sm space-y-2">
+                  <li><strong>おまかせモード</strong>: LLMが画面のHTMLから意味を読み取り、挙動的な問題がないかを自律的にテスト</li>
+                  <li><strong>コンテキスト理解</strong>: サービス説明をLLMに提供することで、より適切なテスト戦略を自動生成</li>
+                  <li><strong>環境変数管理</strong>: キー・バリュー形式で環境変数を管理、テスト実行時に{{変数名}}として参照可能</li>
+                  <li><strong>単一ページ限定</strong>: Phase 1では1つのページ内での操作テストのみ（複数ページ遷移はPhase 2から）</li>
+                  <li><strong>バリデーション</strong>: URL形式チェック、必須項目の入力確認を実装</li>
+                  <li><strong>リアルタイム進行表示</strong>: テスト実行中のAIの思考プロセスと操作をリアルタイム可視化</li>
+                </ul>
+              </div>
+            </div>
+          </details>
+
+          <details class="bg-white rounded-lg border border-slate-200 shadow-sm transition-all duration-300 overflow-hidden" open>
+            <summary class="p-6 cursor-pointer">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                  <span class="text-2xl font-bold text-emerald-500/50 mr-4">1.2</span>
+                  <h3 class="text-lg font-semibold">バグチケット一覧</h3>
+                </div>
+                <svg class="arrow w-5 h-5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                </svg>
+              </div>
+              <p class="ml-12 mt-1 text-slate-500 text-sm">AIが発見した不具合を一覧表示し、プロジェクトの品質状況を即座に把握</p>
+            </summary>
+            <div class="px-6 pb-6">
+              <div class="ml-12 mt-4 pt-4 border-t border-slate-200">
+                <div class="mb-4">
+                  <div class="text-xs text-blue-600 bg-blue-50 px-3 py-1 rounded-full inline-block mb-3">
+                    🎨 実装予定のUIコンポーネント
+                  </div>
+                </div>
+                <div class="mockup mb-8 mx-4">
+                  <div class="mockup-header">
+                    <div class="dots">
+                      <div class="dot bg-red-400"></div>
+                      <div class="dot bg-yellow-400"></div>
+                      <div class="dot bg-green-400"></div>
+                    </div>
+                    <div class="mockup-url-bar">https://qa3.app/projects/1/tickets</div>
+                  </div>
+                  <div class="p-4 text-sm bg-slate-900 flex-1 overflow-y-auto">
+                    <div class="flex justify-between items-center mb-4 sticky top-0 bg-slate-900 pb-2">
+                      <h4 class="font-bold text-white text-base">📱 バグチケット一覧ダッシュボード</h4>
+                      <div class="flex gap-2">
+                        <select class="bg-slate-700 text-white text-xs px-2 py-1 rounded">
+                          <option>重要度順</option>
+                          <option>発見日順</option>
+                          <option>ステータス順</option>
+                        </select>
+                        <button class="bg-emerald-600 text-white text-xs px-3 py-1 rounded">フィルター</button>
+                      </div>
+                    </div>
+
+                    <div class="space-y-2">
+                      <div class="bg-slate-700 p-3 rounded-lg flex items-center justify-between cursor-pointer hover:bg-slate-600 transition-colors">
+                        <div class="flex items-center">
+                          <div class="w-3 h-3 bg-red-500 rounded-full mr-3"></div>
+                          <div>
+                            <p class="font-semibold text-white">ログインフォームの表示崩れ</p>
+                            <p class="text-xs text-slate-400">ID: BUG-001 | Session: #123 | 2024-01-15 14:32</p>
+                          </div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                          <span class="text-xs font-bold text-red-400 bg-red-900/50 px-2 py-1 rounded-full">Critical</span>
+                          <span class="text-xs text-slate-400">未対応</span>
+                        </div>
+                      </div>
+
+                      <div class="bg-slate-700 p-3 rounded-lg flex items-center justify-between cursor-pointer hover:bg-slate-600 transition-colors">
+                        <div class="flex items-center">
+                          <div class="w-3 h-3 bg-amber-500 rounded-full mr-3"></div>
+                          <div>
+                            <p class="font-semibold text-white">商品画像の読み込みエラー</p>
+                            <p class="text-xs text-slate-400">ID: BUG-002 | Session: #124 | 2024-01-15 15:45</p>
+                          </div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                          <span class="text-xs font-bold text-amber-400 bg-amber-900/50 px-2 py-1 rounded-full">High</span>
+                          <span class="text-xs text-emerald-400">対応中</span>
+                        </div>
+                      </div>
+
+                      <div class="bg-slate-700 p-3 rounded-lg flex items-center justify-between cursor-pointer hover:bg-slate-600 transition-colors">
+                        <div class="flex items-center">
+                          <div class="w-3 h-3 bg-blue-500 rounded-full mr-3"></div>
+                          <div>
+                            <p class="font-semibold text-white">フッターリンクの誤動作</p>
+                            <p class="text-xs text-slate-400">ID: BUG-003 | Session: #125 | 2024-01-15 16:12</p>
+                          </div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                          <span class="text-xs font-bold text-blue-400 bg-blue-900/50 px-2 py-1 rounded-full">Medium</span>
+                          <span class="text-xs text-slate-400">未対応</span>
+                        </div>
+                      </div>
+
+                      <div class="bg-slate-700 p-3 rounded-lg flex items-center justify-between cursor-pointer hover:bg-slate-600 transition-colors">
+                        <div class="flex items-center">
+                          <div class="w-3 h-3 bg-green-500 rounded-full mr-3"></div>
+                          <div>
+                            <p class="font-semibold text-white">検索機能のパフォーマンス低下</p>
+                            <p class="text-xs text-slate-400">ID: BUG-004 | Session: #126 | 2024-01-15 16:45</p>
+                          </div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                          <span class="text-xs font-bold text-green-400 bg-green-900/50 px-2 py-1 rounded-full">Low</span>
+                          <span class="text-xs text-emerald-400">対応中</span>
+                        </div>
+                      </div>
+
+                      <div class="bg-slate-700 p-3 rounded-lg flex items-center justify-between cursor-pointer hover:bg-slate-600 transition-colors">
+                        <div class="flex items-center">
+                          <div class="w-3 h-3 bg-violet-500 rounded-full mr-3"></div>
+                          <div>
+                            <p class="font-semibold text-white">カート機能のバリデーションエラー</p>
+                            <p class="text-xs text-slate-400">ID: BUG-005 | Session: #127 | 2024-01-15 17:20</p>
+                          </div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                          <span class="text-xs font-bold text-amber-400 bg-amber-900/50 px-2 py-1 rounded-full">High</span>
+                          <span class="text-xs text-slate-400">未対応</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <h4 class="font-semibold mb-2 text-base">機能仕様</h4>
+                <ul class="list-disc list-inside text-slate-600 text-sm space-y-2">
+                  <li><strong>動的フィルタリング</strong>: 重要度、ステータス、発見日時での絞り込みが可能</li>
+                  <li><strong>状態管理</strong>: 各チケットの対応状況（未対応/対応中/完了/棄却）をリアルタイム更新</li>
+                  <li><strong>一括操作</strong>: 複数チケットの選択による一括ステータス変更</li>
+                  <li><strong>通知機能</strong>: 新規バグ発見時のリアルタイム通知とカウンター表示</li>
+                </ul>
+              </div>
+            </div>
+          </details>
+        </div>
+      </section>
+
+      <!-- Phase 2: Enhancement -->
+      <section id="phase2" class="mb-20">
+        <div class="mb-8">
+          <h2 class="text-sm font-bold uppercase tracking-widest text-sky-600">Phase 2</h2>
+          <p class="mt-1 text-4xl font-bold text-slate-800">🚀 機能拡張と効率化</p>
+          <p class="mt-3 text-lg text-slate-600 max-w-3xl">MVPを基に、より高度なテストやチーム利用を促進する機能を実装し、テストの質とカバレッジを向上させます。複数ページにまたがるシナリオテストやハイブリッドモードが利用可能になります。</p>
+        </div>
+
+        <div class="space-y-4">
+          <details class="bg-white rounded-lg border border-slate-200 shadow-sm transition-all duration-300 overflow-hidden" open>
+            <summary class="p-6 cursor-pointer">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                  <span class="text-2xl font-bold text-sky-500/50 mr-4">2.1</span>
+                  <h3 class="text-lg font-semibold">高度なテスト設定</h3>
+                </div>
+                <svg class="arrow w-5 h-5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                </svg>
+              </div>
+              <p class="ml-12 mt-1 text-slate-500 text-sm">シナリオ・ハイブリッドモード、複数ページテスト、クロスブラウザ/デバイス対応、定期実行でテストカバレッジを向上</p>
+            </summary>
+            <div class="px-6 pb-6">
+              <div class="ml-12 mt-4 pt-4 border-t border-slate-200">
+                <div class="mockup mb-8 mx-4">
+                  <div class="mockup-header">
+                    <div class="dots">
+                      <div class="dot bg-red-400"></div>
+                      <div class="dot bg-yellow-400"></div>
+                      <div class="dot bg-green-400"></div>
+                    </div>
+                    <div class="mockup-url-bar">https://qa3.app/projects/1/settings/advanced</div>
+                  </div>
+                  <div class="p-4 flex-1 overflow-y-auto">
+                    <h4 class="font-bold text-slate-900 text-base mb-4 sticky top-0 bg-white pb-2">高度なテスト設定</h4>
+                    <div class="space-y-4 text-sm">
+                      <div>
+                        <label class="font-medium text-slate-700">テストモード（Phase 2で利用可能）</label>
+                        <div class="mt-1 grid grid-cols-3 gap-2">
+                          <div class="p-2 border rounded text-center bg-white hover:bg-slate-50 cursor-pointer">おまかせ</div>
+                          <div class="p-2 border rounded text-center bg-emerald-100 border-emerald-300 text-emerald-800 font-semibold">シナリオ</div>
+                          <div class="p-2 border rounded text-center bg-white hover:bg-slate-50 cursor-pointer">ハイブリッド</div>
+                        </div>
+                      </div>
+                      <div>
+                        <label class="font-medium text-slate-700">複数ページシナリオ記述</label>
+                        <textarea class="mt-1 p-2 w-full border rounded bg-slate-50 text-slate-700 text-xs h-24 font-mono"># ログインから商品購入まで（複数ページ）
+GOTO "{{BASE_URL}}/login"
+INPUT "{{LOGIN_ID}}" INTO "[name='email']"
+INPUT "{{PASSWORD}}" INTO "[name='password']"
+CLICK "#login-button"
+WAIT FOR element-visible ".dashboard"
+GOTO "{{BASE_URL}}/products"
+CLICK ".product-item:first-child"
+ASSERT text "商品詳細" IN "h1"
+CLICK "#add-to-cart"
+GOTO "{{BASE_URL}}/cart"
+CLICK "#checkout-button"
+ASSERT text "注文確認" IN "h1"</textarea>
+                      </div>
+                      <div>
+                        <label class="font-medium text-slate-700">実行環境</label>
+                        <div class="mt-2 grid grid-cols-2 gap-4">
+                          <div class="space-y-2">
+                            <div class="font-semibold text-xs text-slate-600">ブラウザ</div>
+                            <div class="space-y-1">
+                              <label class="flex items-center text-xs"><input type="checkbox" checked class="mr-2"> Chrome 120+</label>
+                              <label class="flex items-center text-xs"><input type="checkbox" checked class="mr-2"> Firefox 121+</label>
+                              <label class="flex items-center text-xs"><input type="checkbox" class="mr-2"> Safari 17+</label>
+                              <label class="flex items-center text-xs"><input type="checkbox" class="mr-2"> Edge 120+</label>
+                            </div>
+                          </div>
+                          <div class="space-y-2">
+                            <div class="font-semibold text-xs text-slate-600">デバイス</div>
+                            <div class="space-y-1">
+                              <label class="flex items-center text-xs"><input type="checkbox" checked class="mr-2"> Desktop (1920x1080)</label>
+                              <label class="flex items-center text-xs"><input type="checkbox" class="mr-2"> iPhone 15 Pro</label>
+                              <label class="flex items-center text-xs"><input type="checkbox" class="mr-2"> iPad Pro</label>
+                              <label class="flex items-center text-xs"><input type="checkbox" class="mr-2"> Android Galaxy</label>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div>
+                        <label class="font-medium text-slate-700">スケジュール実行</label>
+                        <div class="mt-2 p-3 bg-slate-50 rounded">
+                          <div class="flex flex-wrap gap-2 items-center">
+                            <select class="p-1.5 border rounded text-xs">
+                              <option>毎日</option>
+                              <option>週次</option>
+                              <option>月次</option>
+                            </select>
+                            <input type="time" value="03:00" class="p-1.5 border rounded text-xs">
+                            <button class="bg-sky-500 text-white px-3 py-1.5 rounded text-xs">有効化</button>
+                          </div>
+                        </div>
+                      </div>
+                      <div>
+                        <label class="font-medium text-slate-700">通知設定</label>
+                        <div class="mt-2 space-y-2">
+                          <label class="flex items-center text-xs"><input type="checkbox" checked class="mr-2"> Slack通知</label>
+                          <label class="flex items-center text-xs"><input type="checkbox" class="mr-2"> メール通知</label>
+                          <label class="flex items-center text-xs"><input type="checkbox" class="mr-2"> Teams通知</label>
+                        </div>
+                      </div>
+                      <div>
+                        <label class="font-medium text-slate-700">テスト実行オプション</label>
+                        <div class="mt-2 space-y-2">
+                          <label class="flex items-center text-xs"><input type="checkbox" checked class="mr-2"> ビジュアルリグレッション</label>
+                          <label class="flex items-center text-xs"><input type="checkbox" checked class="mr-2"> パフォーマンス測定</label>
+                          <label class="flex items-center text-xs"><input type="checkbox" class="mr-2"> アクセシビリティチェック</label>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <h4 class="font-semibold mb-2 text-base">機能仕様</h4>
+                <ul class="list-disc list-inside text-slate-600 text-sm space-y-2">
+                  <li><strong>シナリオモード</strong>: 定義済みシナリオに基づく確実性の高いテスト実行</li>
+                  <li><strong>ハイブリッドモード</strong>: シナリオ実行後に自律探索を継続する包括的テスト</li>
+                  <li><strong>複数ページテスト</strong>: GOTO命令による複数ページにまたがるユーザージャーニー検証</li>
+                  <li><strong>マルチ環境実行</strong>: 選択されたブラウザ・デバイスの組み合わせで並列実行</li>
+                  <li><strong>スケジュール機能</strong>: Cron式に対応した柔軟なスケジュール設定</li>
+                  <li><strong>結果統合</strong>: 各環境の結果を自動集約し、環境固有の問題を識別</li>
+                </ul>
+              </div>
+            </div>
+          </details>
+
+          <details class="bg-white rounded-lg border border-slate-200 shadow-sm transition-all duration-300 overflow-hidden" open>
+            <summary class="p-6 cursor-pointer">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                  <span class="text-2xl font-bold text-sky-500/50 mr-4">2.2</span>
+                  <h3 class="text-lg font-semibold">ビジュアルリグレッションテスト</h3>
+                </div>
+                <svg class="arrow w-5 h-5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                </svg>
+              </div>
+              <p class="ml-12 mt-1 text-slate-500 text-sm">意図しないデザイン崩れをピクセル単位で自動検出</p>
+            </summary>
+            <div class="px-6 pb-6">
+              <div class="ml-12 mt-4 pt-4 border-t border-slate-200">
+                <div class="mockup mb-8 mx-4">
+                  <div class="mockup-header">
+                    <div class="dots">
+                      <div class="dot bg-red-400"></div>
+                      <div class="dot bg-yellow-400"></div>
+                      <div class="dot bg-green-400"></div>
+                    </div>
+                    <div class="mockup-url-bar">https://qa3.app/tickets/VRT-001</div>
+                  </div>
+                  <div class="p-4 flex-1 overflow-y-auto">
+                    <h4 class="font-bold text-slate-900 text-base mb-4 sticky top-0 bg-white pb-2">ビジュアル差分検出結果</h4>
+                    <div class="space-y-4 text-sm">
+                      <div class="grid grid-cols-3 gap-2">
+                        <div class="text-center">
+                          <div class="bg-slate-200 aspect-video rounded mb-1 flex items-center justify-center text-xs text-slate-500">ベースライン</div>
+                          <div class="text-xs text-slate-600">2024-01-10</div>
+                        </div>
+                        <div class="text-center">
+                          <div class="bg-slate-200 aspect-video rounded mb-1 flex items-center justify-center text-xs text-slate-500">現在</div>
+                          <div class="text-xs text-slate-600">2024-01-15</div>
+                        </div>
+                        <div class="text-center">
+                          <div class="bg-red-100 aspect-video rounded mb-1 flex items-center justify-center text-xs text-red-600">差分</div>
+                          <div class="text-xs text-red-600">差異: 2.3%</div>
+                        </div>
+                      </div>
+                      <div class="bg-amber-50 p-3 rounded border border-amber-200">
+                        <div class="font-semibold text-amber-800 text-xs mb-1">検出された変更</div>
+                        <ul class="text-xs text-amber-700 space-y-1">
+                          <li>• ナビゲーションバーの高さが5px変更</li>
+                          <li>• ボタンの角丸が変更（border-radius: 4px → 8px）</li>
+                          <li>• フォント色が微調整（#333 → #444）</li>
+                          <li>• ロゴ画像のサイズが10%縮小</li>
+                          <li>• サイドバーの背景色が変更</li>
+                        </ul>
+                      </div>
+                      <div class="bg-blue-50 p-3 rounded border border-blue-200">
+                        <div class="font-semibold text-blue-800 text-xs mb-1">影響範囲の分析</div>
+                        <ul class="text-xs text-blue-700 space-y-1">
+                          <li>• 影響ページ: トップページ、ログインページ</li>
+                          <li>• 変更タイプ: デザイン改善</li>
+                          <li>• リスク評価: 低（機能に影響なし）</li>
+                        </ul>
+                      </div>
+                      <div class="sticky bottom-0 bg-white pt-3">
+                        <div class="flex gap-2">
+                          <button class="bg-emerald-500 text-white px-3 py-1.5 rounded text-xs flex-1">承認（新ベースライン）</button>
+                          <button class="bg-red-500 text-white px-3 py-1.5 rounded text-xs flex-1">リジェクト</button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <h4 class="font-semibold mb-2 text-base">機能仕様</h4>
+                <ul class="list-disc list-inside text-slate-600 text-sm space-y-2">
+                  <li><strong>ピクセル精度検出</strong>: 1px単位での差分検出とハイライト表示</li>
+                  <li><strong>差分率計算</strong>: 変更範囲の定量的測定と重要度判定</li>
+                  <li><strong>承認ワークフロー</strong>: 意図した変更の新ベースライン登録</li>
+                </ul>
+              </div>
+            </div>
+          </details>
+
+          <details class="bg-white rounded-lg border border-slate-200 shadow-sm transition-all duration-300 overflow-hidden" open>
+            <summary class="p-6 cursor-pointer">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                  <span class="text-2xl font-bold text-sky-500/50 mr-4">2.3</span>
+                  <h3 class="text-lg font-semibold">シナリオモード実装</h3>
+                </div>
+                <svg class="arrow w-5 h-5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                </svg>
+              </div>
+              <p class="ml-12 mt-1 text-slate-500 text-sm">定義されたシナリオに基づく確実性の高いテスト実行と複数ページにまたがるユーザージャーニー検証</p>
+            </summary>
+            <div class="px-6 pb-6">
+              <div class="ml-12 mt-4 pt-4 border-t border-slate-200">
+                <div class="mb-4">
+                  <div class="text-xs text-blue-600 bg-blue-50 px-3 py-1 rounded-full inline-block mb-3">
+                    🎨 実装予定のUIコンポーネント
+                  </div>
+                </div>
+                <div class="mockup mb-8 mx-4">
+                  <div class="mockup-header">
+                    <div class="dots">
+                      <div class="dot bg-red-400"></div>
+                      <div class="dot bg-yellow-400"></div>
+                      <div class="dot bg-green-400"></div>
+                    </div>
+                    <div class="mockup-url-bar">https://qa3.app/projects/1/sessions/scenario</div>
+                  </div>
+                  <div class="p-4 flex-1 overflow-y-auto">
+                    <h4 class="font-bold text-slate-900 text-base mb-4 sticky top-0 bg-white pb-2">📱 シナリオテスト設定フォーム</h4>
+                    <div class="space-y-4 text-sm">
+                      <div>
+                        <label class="font-medium text-slate-700">シナリオテンプレート</label>
+                        <div class="mt-1 grid grid-cols-2 gap-2">
+                          <div class="p-2 border rounded text-center bg-emerald-100 border-emerald-300 text-emerald-800 font-semibold text-xs">ユーザー登録フロー</div>
+                          <div class="p-2 border rounded text-center bg-white hover:bg-slate-50 cursor-pointer text-xs">ログイン〜購入</div>
+                          <div class="p-2 border rounded text-center bg-white hover:bg-slate-50 cursor-pointer text-xs">商品検索〜比較</div>
+                          <div class="p-2 border rounded text-center bg-white hover:bg-slate-50 cursor-pointer text-xs">カスタム作成</div>
+                        </div>
+                      </div>
+                      <div>
+                        <label class="font-medium text-slate-700">シナリオ記述</label>
+                        <textarea class="mt-1 p-2 w-full border rounded bg-slate-50 text-slate-700 text-xs h-32 font-mono"># ユーザー登録から初回ログインまで
+# Step 1: 新規登録ページへ移動
+GOTO "{{BASE_URL}}/register"
+WAIT FOR element-visible "form#register-form"
+
+# Step 2: 必要情報の入力
+INPUT "{{TEST_EMAIL}}" INTO "[name='email']"
+INPUT "{{TEST_PASSWORD}}" INTO "[name='password']"
+INPUT "{{TEST_PASSWORD}}" INTO "[name='password_confirm']"
+INPUT "{{TEST_NAME}}" INTO "[name='full_name']"
+CLICK "#accept-terms"
+
+# Step 3: 登録実行
+CLICK "#register-submit"
+WAIT FOR element-visible ".success-message"
+ASSERT text "登録完了" IN ".success-message"
+
+# Step 4: ログインページへ移動
+GOTO "{{BASE_URL}}/login"
+INPUT "{{TEST_EMAIL}}" INTO "[name='email']"
+INPUT "{{TEST_PASSWORD}}" INTO "[name='password']"
+CLICK "#login-submit"
+
+# Step 5: ダッシュボード表示確認
+WAIT FOR element-visible ".dashboard"
+ASSERT text "ようこそ" IN ".welcome-message"
+SCREENSHOT "first-login-success"</textarea>
+                      </div>
+                      <div>
+                        <label class="font-medium text-slate-700">実行オプション</label>
+                        <div class="mt-2 space-y-2">
+                          <label class="flex items-center text-xs"><input type="checkbox" checked class="mr-2"> エラー時に自動スクリーンショット撮影</label>
+                          <label class="flex items-center text-xs"><input type="checkbox" checked class="mr-2"> 各ステップでページ応答時間を測定</label>
+                          <label class="flex items-center text-xs"><input type="checkbox" class="mr-2"> 失敗時に自動リトライ（最大3回）</label>
+                        </div>
+                      </div>
+                      <div class="sticky bottom-0 bg-white pt-3">
+                        <button class="w-full bg-sky-500 text-white font-bold py-2.5 rounded-lg hover:bg-sky-600 transition-colors">🎯 シナリオテスト開始</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <h4 class="font-semibold mb-2 text-base">機能仕様</h4>
+                <ul class="list-disc list-inside text-slate-600 text-sm space-y-2">
+                  <li><strong>複数ページ対応</strong>: GOTO命令により複数ページにまたがるテストシナリオを実行</li>
+                  <li><strong>テンプレート機能</strong>: よく使用されるシナリオをテンプレート化して再利用可能</li>
+                  <li><strong>ステップ実行</strong>: シナリオを段階的に実行し、各ステップでの検証を実施</li>
+                  <li><strong>エラーハンドリング</strong>: 予期しないエラーの自動検出と詳細な診断情報の取得</li>
+                  <li><strong>パフォーマンス測定</strong>: 各ページ遷移の応答時間とパフォーマンス指標を自動測定</li>
+                </ul>
+              </div>
+            </div>
+          </details>
+
+          <details class="bg-white rounded-lg border border-slate-200 shadow-sm transition-all duration-300 overflow-hidden" open>
+            <summary class="p-6 cursor-pointer">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                  <span class="text-2xl font-bold text-sky-500/50 mr-4">2.4</span>
+                  <h3 class="text-lg font-semibold">ハイブリッドモード実装</h3>
+                </div>
+                <svg class="arrow w-5 h-5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                </svg>
+              </div>
+              <p class="ml-12 mt-1 text-slate-500 text-sm">シナリオ実行後の自律探索による包括的テストで最大限のバグ検出を実現</p>
+            </summary>
+            <div class="px-6 pb-6">
+              <div class="ml-12 mt-4 pt-4 border-t border-slate-200">
+                <div class="mb-4">
+                  <div class="text-xs text-violet-600 bg-violet-50 px-3 py-1 rounded-full inline-block mb-3">
+                    🎨 実装予定のUIコンポーネント
+                  </div>
+                </div>
+                <div class="mockup mb-8 mx-4">
+                  <div class="mockup-header">
+                    <div class="dots">
+                      <div class="dot bg-red-400"></div>
+                      <div class="dot bg-yellow-400"></div>
+                      <div class="dot bg-green-400"></div>
+                    </div>
+                    <div class="mockup-url-bar">https://qa3.app/projects/1/sessions/hybrid-progress</div>
+                  </div>
+                  <div class="p-4 text-sm bg-slate-900 flex-1 overflow-y-auto">
+                    <div class="flex justify-between items-center mb-4 sticky top-0 bg-slate-900 pb-2">
+                      <h4 class="font-bold text-white text-base">⚡ ハイブリッドテスト実行状況</h4>
+                      <div class="text-xs text-slate-400">実行時間: 12:34 / 予想: 25:00</div>
+                    </div>
+
+                    <div class="space-y-3">
+                      <!-- フェーズ1: シナリオ実行 -->
+                      <div class="bg-slate-700 p-3 rounded-lg">
+                        <div class="flex items-center justify-between mb-2">
+                          <div class="flex items-center">
+                            <div class="w-3 h-3 bg-green-500 rounded-full mr-2"></div>
+                            <span class="font-semibold text-white text-sm">Phase 1: シナリオ実行</span>
+                          </div>
+                          <span class="text-xs text-green-400 font-semibold">完了</span>
+                        </div>
+                        <div class="text-xs text-slate-300 space-y-1">
+                          <div>✓ ユーザー登録フロー (5分12秒)</div>
+                          <div>✓ ログイン〜商品購入 (7分45秒)</div>
+                          <div>✓ 発見バグ: 2件 (Medium: 1, Low: 1)</div>
+                        </div>
+                      </div>
+
+                      <!-- フェーズ2: 自律探索 -->
+                      <div class="bg-slate-700 p-3 rounded-lg">
+                        <div class="flex items-center justify-between mb-2">
+                          <div class="flex items-center">
+                            <div class="w-3 h-3 bg-amber-500 rounded-full mr-2 live-test-indicator"></div>
+                            <span class="font-semibold text-white text-sm">Phase 2: 自律探索実行中</span>
+                          </div>
+                          <span class="text-xs text-amber-400 font-semibold">実行中</span>
+                        </div>
+                        <div class="text-xs text-slate-300 space-y-1">
+                          <div>🔍 現在: 商品レビュー機能の探索</div>
+                          <div>📊 探索済み: 15/23 ページ</div>
+                          <div>🚨 新規発見バグ: 1件 (High: 1)</div>
+                        </div>
+                        <div class="mt-2 bg-slate-600 rounded-full h-2">
+                          <div class="bg-amber-500 h-2 rounded-full" style="width: 65%"></div>
+                        </div>
+                      </div>
+
+                      <!-- 現在のAI思考 -->
+                      <div class="bg-slate-800 p-3 rounded-lg">
+                        <div class="font-semibold text-emerald-400 text-sm mb-2">🤖 AI自律思考ログ</div>
+                        <div class="text-xs text-slate-300 font-mono space-y-1">
+                          <div>[12:34:15] レビュー投稿フォームを発見</div>
+                          <div>[12:34:16] 未ログイン状態での挙動をテスト</div>
+                          <div>[12:34:17] エラーメッセージの表示確認中...</div>
+                          <div class="text-red-400">[12:34:18] 🚨 バグ検出: エラーメッセージが表示されない</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <h4 class="font-semibold mb-2 text-base">機能仕様</h4>
+                <ul class="list-disc list-inside text-slate-600 text-sm space-y-2">
+                  <li><strong>二段階実行</strong>: 定義済みシナリオ実行後、AIによる自律探索を継続</li>
+                  <li><strong>コンテキスト継承</strong>: シナリオ実行時の状態（ログイン状態等）を自律探索に引き継ぎ</li>
+                  <li><strong>網羅的探索</strong>: シナリオで未検証のページや機能を自動発見・テスト</li>
+                  <li><strong>動的優先度調整</strong>: シナリオ実行結果を基に自律探索の重点領域を動的調整</li>
+                  <li><strong>リアルタイム進捗</strong>: 両フェーズの進行状況とバグ発見状況をリアルタイム表示</li>
+                </ul>
+              </div>
+            </div>
+          </details>
+        </div>
+      </section>
+
+      <!-- Phase 3: Integration -->
+      <section id="phase3" class="mb-20">
+        <div class="mb-8">
+          <h2 class="text-sm font-bold uppercase tracking-widest text-violet-600">Phase 3</h2>
+          <p class="mt-1 text-4xl font-bold text-slate-800">🌐 自動化とエコシステム連携</p>
+          <p class="mt-3 text-lg text-slate-600 max-w-3xl">QA³を既存の開発ワークフローに組み込み、テストプロセスを完全に自動化し、開発サイクル全体の生産性を飛躍させます。</p>
+        </div>
+
+        <div class="space-y-4">
+          <details class="bg-white rounded-lg border border-slate-200 shadow-sm transition-all duration-300 overflow-hidden" open>
+            <summary class="p-6 cursor-pointer">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                  <span class="text-2xl font-bold text-violet-500/50 mr-4">3.1</span>
+                  <h3 class="text-lg font-semibold">CI/CDパイプライン連携</h3>
+                </div>
+                <svg class="arrow w-5 h-5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                </svg>
+              </div>
+              <p class="ml-12 mt-1 text-slate-500 text-sm">デプロイと同時にテストを自動実行し、品質ゲートとして機能</p>
+            </summary>
+            <div class="px-6 pb-6">
+              <div class="ml-12 mt-4 pt-4 border-t border-slate-200">
+                <div class="bg-slate-900 p-4 rounded font-mono text-xs text-green-400 mb-6">
+                  <div class="text-slate-400 mb-2"># GitHub Actions設定例</div>
+                  <div class="space-y-1">
+                    <div><span class="text-blue-400">name:</span> QA3 Integration</div>
+                    <div><span class="text-blue-400">on:</span></div>
+                    <div class="ml-2"><span class="text-blue-400">push:</span></div>
+                    <div class="ml-4"><span class="text-blue-400">branches:</span> [staging]</div>
+                    <div><span class="text-blue-400">jobs:</span></div>
+                    <div class="ml-2"><span class="text-blue-400">qa3-test:</span></div>
+                    <div class="ml-4"><span class="text-blue-400">runs-on:</span> ubuntu-latest</div>
+                    <div class="ml-4"><span class="text-blue-400">steps:</span></div>
+                    <div class="ml-6">- <span class="text-blue-400">name:</span> Run QA3 Tests</div>
+                    <div class="ml-8"><span class="text-blue-400">uses:</span> qa3/action@v1</div>
+                    <div class="ml-8"><span class="text-blue-400">with:</span></div>
+                    <div class="ml-10"><span class="text-blue-400">project-id:</span> $<span class="text-yellow-400">{{"{{"}} secrets.QA3_PROJECT_ID {{"}}"}}</span></div>
+                    <div class="ml-10"><span class="text-blue-400">api-key:</span> $<span class="text-yellow-400">{{"{{"}} secrets.QA3_API_KEY {{"}}"}}</span></div>
+                    <div class="ml-10"><span class="text-blue-400">fail-on-bugs:</span> critical,high</div>
+                  </div>
+                </div>
+                <h4 class="font-semibold mb-2 text-base">機能仕様</h4>
+                <ul class="list-disc list-inside text-slate-600 text-sm space-y-2">
+                  <li><strong>自動トリガー</strong>: Git push、PR作成、デプロイ完了時の自動テスト実行</li>
+                  <li><strong>品質ゲート</strong>: 設定した重要度以上のバグ検出時のパイプライン停止</li>
+                  <li><strong>結果通知</strong>: テスト結果のPRコメント自動投稿</li>
+                </ul>
+              </div>
+            </div>
+          </details>
+
+          <details class="bg-white rounded-lg border border-slate-200 shadow-sm transition-all duration-300 overflow-hidden" open>
+            <summary class="p-6 cursor-pointer">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                  <span class="text-2xl font-bold text-violet-500/50 mr-4">3.2</span>
+                  <h3 class="text-lg font-semibold">外部ツール連携</h3>
+                </div>
+                <svg class="arrow w-5 h-5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                </svg>
+              </div>
+              <p class="ml-12 mt-1 text-slate-500 text-sm">Jira, Slackなどと連携し、チームのコミュニケーションを円滑化</p>
+            </summary>
+            <div class="px-6 pb-6">
+              <div class="ml-12 mt-4 pt-4 border-t border-slate-200">
+                <div class="grid md:grid-cols-2 gap-6 mb-6">
+                  <div class="bg-slate-50 p-4 rounded">
+                    <h5 class="font-semibold mb-3">Slack通知例</h5>
+                    <div class="bg-white p-3 rounded border text-xs">
+                      <div class="flex items-center mb-2">
+                        <div class="w-6 h-6 bg-emerald-500 rounded mr-2 flex items-center justify-center text-white text-xs">Q</div>
+                        <span class="font-semibold">QA³ Bot</span>
+                        <span class="text-slate-500 ml-auto">今</span>
+                      </div>
+                      <div class="text-slate-700">
+                        🚨 <strong>Critical Bug</strong> detected in staging environment
+                        <div class="mt-1 text-slate-600">
+                          <strong>BUG-001:</strong> ログインフォームの表示崩れ<br/>
+                          <strong>Session:</strong> #123<br/>
+                          <a href="#" class="text-blue-600">詳細を見る →</a>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="bg-slate-50 p-4 rounded">
+                    <h5 class="font-semibold mb-3">Jira連携例</h5>
+                    <div class="bg-white p-3 rounded border text-xs">
+                      <div class="flex items-center justify-between mb-2">
+                        <span class="font-semibold text-red-600">PROJ-456</span>
+                        <span class="bg-red-100 text-red-600 px-2 py-1 rounded text-xs">High</span>
+                      </div>
+                      <div class="text-slate-700">
+                        <div class="font-semibold mb-1">ログインフォーム表示崩れ</div>
+                        <div class="text-slate-500">
+                          Assigned: 田中 太郎<br/>
+                          Sprint: Sprint 24<br/>
+                          QA³リンク: <a href="#" class="text-blue-600">BUG-001</a>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <h4 class="font-semibold mb-2 text-base">機能仕様</h4>
+                <ul class="list-disc list-inside text-slate-600 text-sm space-y-2">
+                  <li><strong>双方向同期</strong>: QA³のバグチケットを自動でJiraチケットとして起票、ステータス同期</li>
+                  <li><strong>カスタム通知</strong>: 重要度やプロジェクトに応じたSlackチャンネル振り分け</li>
+                  <li><strong>API連携</strong>: REST APIによる柔軟な外部システム連携</li>
+                </ul>
+              </div>
+            </div>
+          </details>
+        </div>
+      </section>
+
+      <!-- Test Execution Specification -->
+      <section id="test-execution" class="mb-20">
+        <div class="mb-12">
+          <h2 class="text-sm font-bold uppercase tracking-widest text-amber-600">Test Execution</h2>
+          <p class="mt-1 text-4xl font-bold text-slate-800">📊 テスト実行仕様</p>
+          <p class="mt-3 text-lg text-slate-600 max-w-4xl">AIエージェントによるテスト実行の詳細プロセスと可視化方法を解説します。</p>
+        </div>
+
+        <!-- リアルタイムテスト進行画面 -->
+        <div class="bg-white rounded-xl shadow-lg border border-slate-200 mb-8">
+          <div class="p-6 border-b border-slate-200">
+            <h3 class="text-xl font-bold">📱 UIコンポーネント例: リアルタイムテスト進行画面</h3>
+            <p class="text-sm text-slate-600 mt-1">テスト実行中のAIエージェントの動作をリアルタイムで可視化するWebアプリケーション画面</p>
+            <div class="mt-2 text-xs text-amber-600 bg-amber-50 px-3 py-1 rounded-full inline-block">
+              🎨 実装予定のUIコンポーネント
+            </div>
+          </div>
+
+          <div class="mockup mx-4 mb-8">
+            <div class="mockup-header">
+              <div class="dots">
+                <div class="dot bg-red-400"></div>
+                <div class="dot bg-yellow-400"></div>
+                <div class="dot bg-green-400"></div>
+              </div>
+              <div class="mockup-url-bar">https://qa3.app/projects/1/sessions/456/live</div>
+            </div>
+
+            <div class="grid grid-cols-3 gap-0 text-sm flex-1 overflow-hidden">
+              <!-- AIエージェント思考プロセス -->
+              <div class="p-4 bg-slate-900 text-white overflow-y-auto">
+                <h4 class="font-bold text-emerald-400 mb-3 flex items-center sticky top-0 bg-slate-900 pb-2">
+                  <span class="live-test-indicator w-2 h-2 bg-emerald-400 rounded-full mr-2"></span>
+                  AI思考プロセス
+                </h4>
+                <div class="space-y-2 text-xs font-mono">
+                  <div class="text-slate-300">[14:32:15] ページ解析開始...</div>
+                  <div class="text-blue-300">[14:32:16] 検出: ログインフォーム</div>
+                  <div class="text-yellow-300">[14:32:17] 計画: メールアドレス入力</div>
+                  <div class="text-green-300">[14:32:18] 実行: input[type="email"]をクリック</div>
+                  <div class="text-slate-300">[14:32:19] 入力: user@example.com</div>
+                  <div class="text-yellow-300">[14:32:20] 次のアクション: パスワード入力</div>
+                  <div class="text-slate-300">[14:32:21] 計画: パスワード入力フィールド検索</div>
+                  <div class="text-green-300">[14:32:22] 実行: input[type="password"]をクリック</div>
+                  <div class="text-slate-300">[14:32:23] 入力: ••••••••••••</div>
+                  <div class="text-yellow-300">[14:32:24] 次のアクション: ログインボタンクリック</div>
+                </div>
+              </div>
+
+              <!-- 現在のページスクリーンショット -->
+              <div class="p-4 bg-slate-50 overflow-y-auto">
+                <h4 class="font-bold text-slate-800 mb-3 sticky top-0 bg-slate-50 pb-2">現在のページ状態</h4>
+                <div class="bg-white border rounded aspect-video flex items-center justify-center text-slate-400 text-xs mb-3">
+                  [リアルタイムスクリーンショット]<br/>
+                  現在操作中の要素がハイライト表示
+                </div>
+                <div class="text-xs text-slate-600 space-y-1">
+                  <div><strong>URL:</strong> https://example-app.com/login</div>
+                  <div><strong>解像度:</strong> 1920x1080</div>
+                  <div><strong>ブラウザ:</strong> Chrome 120.0</div>
+                  <div><strong>デバイス:</strong> Desktop</div>
+                  <div><strong>ネットワーク:</strong> Fast 3G</div>
+                </div>
+              </div>
+
+              <!-- 実行ログ -->
+              <div class="p-4 bg-slate-50 overflow-y-auto">
+                <h4 class="font-bold text-slate-800 mb-3 sticky top-0 bg-slate-50 pb-2">実行ログ</h4>
+                <div class="space-y-1 text-xs font-mono">
+                  <div class="text-green-600">✓ GOTO https://example-app.com</div>
+                  <div class="text-green-600">✓ WAIT 2s</div>
+                  <div class="text-green-600">✓ CLICK input[name="email"]</div>
+                  <div class="text-green-600">✓ INPUT user@example.com</div>
+                  <div class="text-green-600">✓ CLICK input[name="password"]</div>
+                  <div class="text-blue-600">⟳ INPUT ••••••••••••</div>
+                  <div class="text-slate-400">⋯ 次のアクション準備中...</div>
+                  <div class="text-slate-300">⋯ ログインボタン検索中...</div>
+                </div>
+
+                <div class="mt-4 pt-3 border-t border-slate-200 sticky bottom-0 bg-slate-50">
+                  <div class="text-xs text-slate-600 mb-2">進捗状況</div>
+                  <div class="bg-slate-200 rounded-full h-2">
+                    <div class="bg-emerald-500 h-2 rounded-full" style="width: 35%"></div>
+                  </div>
+                  <div class="text-xs text-slate-500 mt-1">実行中: 7/20 アクション完了</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- テストアクション定義 -->
+        <div class="bg-white rounded-xl p-8 shadow-lg border border-slate-200">
+          <h3 class="text-xl font-bold mb-6">テストアクション定義</h3>
+          <p class="text-slate-600 mb-6">AIエージェントが実行可能なアクションの種類と仕様</p>
+
+          <div class="grid md:grid-cols-2 gap-8">
+            <div>
+              <h4 class="font-semibold mb-4">基本アクション</h4>
+              <div class="space-y-3 text-sm">
+                <div class="bg-slate-50 p-3 rounded">
+                  <code class="text-emerald-600 font-mono">CLICK</code>
+                  <p class="text-slate-600 mt-1">指定した要素をクリック</p>
+                  <pre class="text-xs text-slate-500 mt-1 font-mono">例: CLICK "#login-button"</pre>
+                </div>
+                <div class="bg-slate-50 p-3 rounded">
+                  <code class="text-sky-600 font-mono">INPUT</code>
+                  <p class="text-slate-600 mt-1">テキストフィールドに文字を入力</p>
+                  <pre class="text-xs text-slate-500 mt-1 font-mono">例: INPUT "user@example.com" INTO "[name='email']"</pre>
+                </div>
+                <div class="bg-slate-50 p-3 rounded">
+                  <code class="text-violet-600 font-mono">SCROLL</code>
+                  <p class="text-slate-600 mt-1">ページをスクロール</p>
+                  <pre class="text-xs text-slate-500 mt-1 font-mono">例: SCROLL "down" 500px</pre>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <h4 class="font-semibold mb-4">高度なアクション</h4>
+              <div class="space-y-3 text-sm">
+                <div class="bg-slate-50 p-3 rounded">
+                  <code class="text-amber-600 font-mono">WAIT</code>
+                  <p class="text-slate-600 mt-1">指定した条件まで待機</p>
+                  <pre class="text-xs text-slate-500 mt-1 font-mono">例: WAIT FOR element-visible "#result"</pre>
+                </div>
+                <div class="bg-slate-50 p-3 rounded">
+                  <code class="text-red-600 font-mono">ASSERT</code>
+                  <p class="text-slate-600 mt-1">期待値と実際の値を比較</p>
+                  <pre class="text-xs text-slate-500 mt-1 font-mono">例: ASSERT text "ログイン成功" IN ".message"</pre>
+                </div>
+                <div class="bg-slate-50 p-3 rounded">
+                  <code class="text-pink-600 font-mono">SCREENSHOT</code>
+                  <p class="text-slate-600 mt-1">スクリーンショットを撮影</p>
+                  <pre class="text-xs text-slate-500 mt-1 font-mono">例: SCREENSHOT "login-completed"</pre>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Test Modes Detail -->
+      <section id="test-modes" class="mb-20">
+        <div class="mb-12">
+          <h2 class="text-sm font-bold uppercase tracking-widest text-violet-600">Test Modes</h2>
+          <p class="mt-1 text-4xl font-bold text-slate-800">💡 テストモード詳細</p>
+          <p class="mt-3 text-lg text-slate-600 max-w-4xl">QA³が提供する4つのテストモードの詳細仕様と使い分け方法を解説します。</p>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-8">
+          <!-- おまかせモード -->
+          <div class="bg-white rounded-xl p-8 shadow-lg border border-slate-200">
+            <div class="flex items-center mb-4">
+              <div class="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center">
+                <span class="text-2xl">🤖</span>
+              </div>
+              <h3 class="text-xl font-bold ml-4">1. おまかせモード</h3>
+            </div>
+            <p class="text-slate-600 mb-4">AIが画面を見ながら自律的に判断し、最適なテストシナリオを実行</p>
+
+            <div class="space-y-3 text-sm">
+              <div class="bg-slate-50 p-3 rounded">
+                <div class="font-semibold text-slate-700">動作原理</div>
+                <p class="text-slate-600 mt-1">HTMLから画面の意味を理解 → コンテキスト分析 → 挙動的問題の検出 → 自律的テスト実行</p>
+              </div>
+              <div class="bg-slate-50 p-3 rounded">
+                <div class="font-semibold text-slate-700">適用場面</div>
+                <p class="text-slate-600 mt-1">単一ページの機能検証、UI/UXの挙動テスト、初期品質チェック</p>
+              </div>
+              <div class="bg-slate-50 p-3 rounded">
+                <div class="font-semibold text-slate-700">実行時間</div>
+                <p class="text-slate-600 mt-1">5-15分（ページ複雑さにより調整）</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- シナリオモード -->
+          <div class="bg-white rounded-xl p-8 shadow-lg border border-slate-200">
+            <div class="flex items-center mb-4">
+              <div class="w-12 h-12 bg-sky-100 rounded-xl flex items-center justify-center">
+                <span class="text-2xl">📋</span>
+              </div>
+              <h3 class="text-xl font-bold ml-4">2. シナリオモード</h3>
+            </div>
+            <p class="text-slate-600 mb-4">特定のシナリオに限定してテストを実施</p>
+
+            <div class="space-y-3 text-sm">
+              <div class="bg-slate-50 p-3 rounded">
+                <div class="font-semibold text-slate-700">シナリオ記法（複数ページ対応）</div>
+                <pre class="text-xs font-mono text-slate-600 mt-1">GOTO "{{BASE_URL}}/login"
+INPUT "{{EMAIL}}" INTO "[name='email']"
+CLICK "#submit-btn"
+GOTO "{{BASE_URL}}/dashboard"
+ASSERT text "ようこそ" IN ".welcome"</pre>
+              </div>
+              <div class="bg-slate-50 p-3 rounded">
+                <div class="font-semibold text-slate-700">適用場面</div>
+                <p class="text-slate-600 mt-1">複数ページのユーザージャーニー、リグレッションテスト、重要機能の定期検証</p>
+              </div>
+              <div class="bg-slate-50 p-3 rounded">
+                <div class="font-semibold text-slate-700">実行時間</div>
+                <p class="text-slate-600 mt-1">5-20分（シナリオ複雑さ・ページ数に依存）</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- ハイブリッドモード -->
+          <div class="bg-white rounded-xl p-8 shadow-lg border border-slate-200">
+            <div class="flex items-center mb-4">
+              <div class="w-12 h-12 bg-violet-100 rounded-xl flex items-center justify-center">
+                <span class="text-2xl">⚡</span>
+              </div>
+              <h3 class="text-xl font-bold ml-4">3. ハイブリッドモード</h3>
+            </div>
+            <p class="text-slate-600 mb-4">おまかせとシナリオを同時並行で実行</p>
+
+            <div class="space-y-3 text-sm">
+              <div class="bg-slate-50 p-3 rounded">
+                <div class="font-semibold text-slate-700">実行方式</div>
+                <p class="text-slate-600 mt-1">シナリオ実行後に自律探索を継続</p>
+              </div>
+              <div class="bg-slate-50 p-3 rounded">
+                <div class="font-semibold text-slate-700">適用場面</div>
+                <p class="text-slate-600 mt-1">包括的品質保証、重要リリース前テスト</p>
+              </div>
+              <div class="bg-slate-50 p-3 rounded">
+                <div class="font-semibold text-slate-700">実行時間</div>
+                <p class="text-slate-600 mt-1">15-45分（最も網羅的）</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- 指示モード -->
+          <div class="bg-white rounded-xl p-8 shadow-lg border border-slate-200">
+            <div class="flex items-center mb-4">
+              <div class="w-12 h-12 bg-amber-100 rounded-xl flex items-center justify-center">
+                <span class="text-2xl">🎯</span>
+              </div>
+              <h3 class="text-xl font-bold ml-4">4. 指示モード</h3>
+            </div>
+            <p class="text-slate-600 mb-4">特定の不具合再現チェックを自動実施</p>
+
+            <div class="space-y-3 text-sm">
+              <div class="bg-slate-50 p-3 rounded">
+                <div class="font-semibold text-slate-700">入力例</div>
+                <p class="text-slate-600 mt-1 font-mono text-xs">"ログイン後にダッシュボードが表示されない"</p>
+              </div>
+              <div class="bg-slate-50 p-3 rounded">
+                <div class="font-semibold text-slate-700">適用場面</div>
+                <p class="text-slate-600 mt-1">お客様報告バグの一次切り分け</p>
+              </div>
+              <div class="bg-slate-50 p-3 rounded">
+                <div class="font-semibold text-slate-700">実行時間</div>
+                <p class="text-slate-600 mt-1">5-15分（再現試行回数に依存）</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Security Specification -->
+      <section id="security" class="mb-20">
+        <div class="mb-12">
+          <h2 class="text-sm font-bold uppercase tracking-widest text-red-600">Security</h2>
+          <p class="mt-1 text-4xl font-bold text-slate-800">🔒 セキュリティ仕様</p>
+          <p class="mt-3 text-lg text-slate-600 max-w-4xl">QA³のセキュリティ対策と企業レベルの要件への対応について詳細に解説します。</p>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-8 mb-8">
+          <!-- データ保護 -->
+          <div class="bg-white rounded-xl p-8 shadow-lg border border-slate-200">
+            <div class="flex items-center mb-4">
+              <div class="w-12 h-12 bg-red-100 rounded-xl flex items-center justify-center">
+                <span class="text-2xl">🛡️</span>
+              </div>
+              <h3 class="text-xl font-bold ml-4">データ保護</h3>
+            </div>
+            <ul class="space-y-3 text-sm text-slate-600">
+              <li class="flex items-start">
+                <span class="text-emerald-500 mr-2">✓</span>
+                <div><strong>AES-256暗号化</strong><br/>保存時・転送時の完全暗号化</div>
+              </li>
+              <li class="flex items-start">
+                <span class="text-emerald-500 mr-2">✓</span>
+                <div><strong>秘密情報の仮名化</strong><br/>テスト中の機密データ自動マスキング</div>
+              </li>
+              <li class="flex items-start">
+                <span class="text-emerald-500 mr-2">✓</span>
+                <div><strong>データ保持期間管理</strong><br/>設定可能な自動データ削除</div>
+              </li>
+            </ul>
+          </div>
+
+          <!-- アクセス制御 -->
+          <div class="bg-white rounded-xl p-8 shadow-lg border border-slate-200">
+            <div class="flex items-center mb-4">
+              <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
+                <span class="text-2xl">🔑</span>
+              </div>
+              <h3 class="text-xl font-bold ml-4">アクセス制御</h3>
+            </div>
+            <ul class="space-y-3 text-sm text-slate-600">
+              <li class="flex items-start">
+                <span class="text-emerald-500 mr-2">✓</span>
+                <div><strong>多要素認証 (MFA)</strong><br/>TOTP・SMS認証対応</div>
+              </li>
+              <li class="flex items-start">
+                <span class="text-emerald-500 mr-2">✓</span>
+                <div><strong>ロールベース権限</strong><br/>管理者・メンバー・読取専用の細かい権限制御</div>
+              </li>
+              <li class="flex items-start">
+                <span class="text-emerald-500 mr-2">✓</span>
+                <div><strong>IP制限</strong><br/>企業ネットワークからのアクセス限定</div>
+              </li>
+            </ul>
+          </div>
+
+          <!-- 監査・コンプライアンス -->
+          <div class="bg-white rounded-xl p-8 shadow-lg border border-slate-200">
+            <div class="flex items-center mb-4">
+              <div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
+                <span class="text-2xl">📋</span>
+              </div>
+              <h3 class="text-xl font-bold ml-4">監査・コンプライアンス</h3>
+            </div>
+            <ul class="space-y-3 text-sm text-slate-600">
+              <li class="flex items-start">
+                <span class="text-emerald-500 mr-2">✓</span>
+                <div><strong>SOC 2 Type II</strong><br/>第三者監査による証明書取得済み</div>
+              </li>
+              <li class="flex items-start">
+                <span class="text-emerald-500 mr-2">✓</span>
+                <div><strong>GDPR準拠</strong><br/>EU一般データ保護規則への完全対応</div>
+              </li>
+              <li class="flex items-start">
+                <span class="text-emerald-500 mr-2">✓</span>
+                <div><strong>完全監査ログ</strong><br/>全アクセス・操作の詳細記録</div>
+              </li>
+            </ul>
+          </div>
+
+          <!-- インフラストラクチャ -->
+          <div class="bg-white rounded-xl p-8 shadow-lg border border-slate-200">
+            <div class="flex items-center mb-4">
+              <div class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
+                <span class="text-2xl">☁️</span>
+              </div>
+              <h3 class="text-xl font-bold ml-4">インフラストラクチャ</h3>
+            </div>
+            <ul class="space-y-3 text-sm text-slate-600">
+              <li class="flex items-start">
+                <span class="text-emerald-500 mr-2">✓</span>
+                <div><strong>AWS/GCP</strong><br/>エンタープライズグレードクラウド</div>
+              </li>
+              <li class="flex items-start">
+                <span class="text-emerald-500 mr-2">✓</span>
+                <div><strong>VPC分離</strong><br/>完全隔離された実行環境</div>
+              </li>
+              <li class="flex items-start">
+                <span class="text-emerald-500 mr-2">✓</span>
+                <div><strong>自動脅威検出</strong><br/>リアルタイム異常検知システム</div>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- セキュリティ認証 -->
+        <div class="bg-gradient-to-r from-slate-50 to-slate-100 rounded-2xl p-8">
+          <h3 class="text-2xl font-bold text-slate-800 mb-6 text-center">🏆 取得済み認証・準拠規格</h3>
+          <div class="grid md:grid-cols-4 gap-6 text-center">
+            <div>
+              <div class="w-16 h-16 bg-blue-100 rounded-full mx-auto mb-3 flex items-center justify-center">
+                <span class="text-2xl">🔐</span>
+              </div>
+              <div class="font-semibold text-slate-800">SOC 2 Type II</div>
+              <div class="text-xs text-slate-600">セキュリティ統制監査</div>
+            </div>
+            <div>
+              <div class="w-16 h-16 bg-green-100 rounded-full mx-auto mb-3 flex items-center justify-center">
+                <span class="text-2xl">🇪🇺</span>
+              </div>
+              <div class="font-semibold text-slate-800">GDPR準拠</div>
+              <div class="text-xs text-slate-600">EU一般データ保護規則</div>
+            </div>
+            <div>
+              <div class="w-16 h-16 bg-purple-100 rounded-full mx-auto mb-3 flex items-center justify-center">
+                <span class="text-2xl">🔒</span>
+              </div>
+              <div class="font-semibold text-slate-800">ISO 27001</div>
+              <div class="text-xs text-slate-600">情報セキュリティ管理</div>
+            </div>
+            <div>
+              <div class="w-16 h-16 bg-red-100 rounded-full mx-auto mb-3 flex items-center justify-center">
+                <span class="text-2xl">🛡️</span>
+              </div>
+              <div class="font-semibold text-slate-800">PCI DSS</div>
+              <div class="text-xs text-slate-600">決済カード業界基準</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- API Specification -->
+      <section id="api-spec" class="mb-20">
+        <div class="mb-12">
+          <h2 class="text-sm font-bold uppercase tracking-widest text-indigo-600">API Specification</h2>
+          <p class="mt-1 text-4xl font-bold text-slate-800">📱 API仕様</p>
+          <p class="mt-3 text-lg text-slate-600 max-w-4xl">QA³の外部連携やカスタム統合のためのAPI仕様を詳細に解説します。</p>
+        </div>
+
+        <!-- REST API エンドポイント -->
+        <div class="bg-white rounded-xl shadow-lg border border-slate-200 mb-8">
+          <div class="p-6 border-b border-slate-200">
+            <h3 class="text-xl font-bold">REST API エンドポイント</h3>
+            <p class="text-sm text-slate-600 mt-1">QA³の主要機能にアクセスするためのRESTful API一覧</p>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full">
+              <thead class="bg-slate-50 border-b border-slate-200">
+                <tr>
+                  <th class="text-left p-4 font-semibold text-slate-700">エンドポイント</th>
+                  <th class="text-left p-4 font-semibold text-slate-700">メソッド</th>
+                  <th class="text-left p-4 font-semibold text-slate-700">説明</th>
+                  <th class="text-left p-4 font-semibold text-slate-700">認証</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-200">
+                <tr class="hover:bg-slate-50">
+                  <td class="p-4 font-mono text-sm text-blue-600">/api/v1/sessions</td>
+                  <td class="p-4"><span class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs font-semibold">POST</span></td>
+                  <td class="p-4 text-slate-600">新しいテストセッションを開始</td>
+                  <td class="p-4"><span class="bg-amber-100 text-amber-800 px-2 py-1 rounded text-xs">API Key</span></td>
+                </tr>
+                <tr class="hover:bg-slate-50">
+                  <td class="p-4 font-mono text-sm text-blue-600">/api/v1/sessions/{id}</td>
+                  <td class="p-4"><span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs font-semibold">GET</span></td>
+                  <td class="p-4 text-slate-600">テストセッションの状態取得</td>
+                  <td class="p-4"><span class="bg-amber-100 text-amber-800 px-2 py-1 rounded text-xs">API Key</span></td>
+                </tr>
+                <tr class="hover:bg-slate-50">
+                  <td class="p-4 font-mono text-sm text-blue-600">/api/v1/tickets</td>
+                  <td class="p-4"><span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs font-semibold">GET</span></td>
+                  <td class="p-4 text-slate-600">バグチケット一覧取得</td>
+                  <td class="p-4"><span class="bg-amber-100 text-amber-800 px-2 py-1 rounded text-xs">API Key</span></td>
+                </tr>
+                <tr class="hover:bg-slate-50">
+                  <td class="p-4 font-mono text-sm text-blue-600">/api/v1/tickets/{id}</td>
+                  <td class="p-4"><span class="bg-orange-100 text-orange-800 px-2 py-1 rounded text-xs font-semibold">PATCH</span></td>
+                  <td class="p-4 text-slate-600">バグチケットのステータス更新</td>
+                  <td class="p-4"><span class="bg-amber-100 text-amber-800 px-2 py-1 rounded text-xs">API Key</span></td>
+                </tr>
+                <tr class="hover:bg-slate-50">
+                  <td class="p-4 font-mono text-sm text-blue-600">/api/v1/webhooks</td>
+                  <td class="p-4"><span class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs font-semibold">POST</span></td>
+                  <td class="p-4 text-slate-600">Webhook設定の作成</td>
+                  <td class="p-4"><span class="bg-red-100 text-red-800 px-2 py-1 rounded text-xs">Bearer Token</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- APIリクエスト例 -->
+        <div class="grid md:grid-cols-2 gap-8">
+          <div class="bg-white rounded-xl p-6 shadow-lg border border-slate-200">
+            <h4 class="text-lg font-bold mb-4">テストセッション開始</h4>
+            <div class="bg-slate-900 p-4 rounded font-mono text-xs text-green-400">
+              <div class="text-slate-400 mb-2"># cURL例</div>
+              <div class="space-y-1 text-white">
+                <div><span class="text-blue-400">curl</span> -X POST \</div>
+                <div class="ml-2">https://api.qa3.app/v1/sessions \</div>
+                <div class="ml-2">-H <span class="text-yellow-400">"Authorization: Bearer YOUR_API_KEY"</span> \</div>
+                <div class="ml-2">-H <span class="text-yellow-400">"Content-Type: application/json"</span> \</div>
+                <div class="ml-2">-d <span class="text-yellow-400">'{"{"}</span></div>
+                <div class="ml-4"><span class="text-yellow-400">"target_url": "https://staging.example.com",</span></div>
+                <div class="ml-4"><span class="text-yellow-400">"test_type": "scenario",</span></div>
+                <div class="ml-4"><span class="text-yellow-400">"scenario": "login_flow"</span></div>
+                <div class="ml-2"><span class="text-yellow-400">{"}"}'</span></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-xl p-6 shadow-lg border border-slate-200">
+            <h4 class="text-lg font-bold mb-4">レスポンス例</h4>
+            <div class="bg-slate-900 p-4 rounded font-mono text-xs text-green-400">
+              <div class="text-slate-400 mb-2"># JSON Response</div>
+              <div class="space-y-1 text-white">
+                <div>{"{"}</div>
+                <div class="ml-2"><span class="text-blue-400">"session_id":</span> <span class="text-yellow-400">"sess_abc123def456"</span>,</div>
+                <div class="ml-2"><span class="text-blue-400">"status":</span> <span class="text-yellow-400">"queued"</span>,</div>
+                <div class="ml-2"><span class="text-blue-400">"estimated_duration":</span> <span class="text-green-400">300</span>,</div>
+                <div class="ml-2"><span class="text-blue-400">"webhook_url":</span> <span class="text-yellow-400">"https://api.qa3.app/webhooks/sess_abc123def456"</span>,</div>
+                <div class="ml-2"><span class="text-blue-400">"created_at":</span> <span class="text-yellow-400">"2024-01-15T14:32:00Z"</span></div>
+                <div>{"}"}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- WebSocket仕様 -->
+        <div class="bg-white rounded-xl shadow-lg border border-slate-200 mt-8">
+          <div class="p-6 border-b border-slate-200">
+            <h3 class="text-xl font-bold">WebSocket リアルタイム通信</h3>
+            <p class="text-sm text-slate-600 mt-1">テストセッションの進行状況をリアルタイムで取得</p>
+          </div>
+
+          <div class="p-6">
+            <div class="bg-slate-900 p-4 rounded font-mono text-xs text-green-400 mb-4">
+              <div class="text-slate-400 mb-2"># WebSocket接続例</div>
+              <div class="space-y-1 text-white">
+                <div><span class="text-blue-400">const</span> ws = <span class="text-yellow-400">new</span> <span class="text-green-400">WebSocket</span>(<span class="text-yellow-400">'wss://api.qa3.app/ws/sessions/sess_abc123def456'</span>);</div>
+                <div></div>
+                <div>ws.<span class="text-blue-400">onmessage</span> = (<span class="text-blue-400">event</span>) => {"{"}</div>
+                <div class="ml-2"><span class="text-blue-400">const</span> data = <span class="text-green-400">JSON</span>.<span class="text-blue-400">parse</span>(event.data);</div>
+                <div class="ml-2"><span class="text-green-400">console</span>.<span class="text-blue-400">log</span>(<span class="text-yellow-400">'Test progress:'</span>, data);</div>
+                <div>{"}"};</div>
+              </div>
+            </div>
+
+            <div class="bg-slate-50 p-4 rounded">
+              <h4 class="font-semibold mb-2">受信メッセージ例</h4>
+              <ul class="text-sm text-slate-600 space-y-2">
+                <li><code class="bg-white px-2 py-1 rounded">{"type": "action", "data": {"action": "click", "target": "#login-btn"}}</code></li>
+                <li><code class="bg-white px-2 py-1 rounded">{"type": "bug_detected", "data": {"severity": "high", "title": "Layout issue"}}</code></li>
+                <li><code class="bg-white px-2 py-1 rounded">{"type": "session_complete", "data": {"bugs_found": 3, "duration": 287}}</code></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+
+
+      <!-- Glossary -->
+      <section id="glossary" class="mb-20">
+        <div class="mb-12">
+          <h2 class="text-sm font-bold uppercase tracking-widest text-emerald-600">Glossary</h2>
+          <p class="mt-1 text-4xl font-bold text-slate-800">📚 用語集</p>
+          <p class="mt-3 text-lg text-slate-600 max-w-4xl">QA³で使用される専門用語と概念の定義一覧です。</p>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-lg border border-slate-200">
+          <div class="overflow-hidden">
+            <table class="w-full">
+              <thead class="bg-slate-50 border-b border-slate-200">
+                <tr>
+                  <th class="text-left p-4 font-semibold text-slate-700 w-1/4">用語</th>
+                  <th class="text-left p-4 font-semibold text-slate-700 w-1/2">定義</th>
+                  <th class="text-left p-4 font-semibold text-slate-700 w-1/4">詳細・補足</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-200">
+                <tr class="hover:bg-slate-50">
+                  <td class="p-4">
+                    <div class="font-semibold text-slate-800">シナリオ</div>
+                    <div class="text-xs text-slate-500">Scenario</div>
+                  </td>
+                  <td class="p-4 text-slate-600">特定の目的を達成するための一連の定義済み操作フロー</td>
+                  <td class="p-4 text-sm text-slate-500">テキストファイルや専用エディタで定義可能。例：「ユーザー登録」「商品購入」</td>
+                </tr>
+                <tr class="hover:bg-slate-50">
+                  <td class="p-4">
+                    <div class="font-semibold text-slate-800">テストセッション</div>
+                    <div class="text-xs text-slate-500">Test Session</div>
+                  </td>
+                  <td class="p-4 text-slate-600">あるテストの開始から終了までの一回の実行単位</td>
+                  <td class="p-4 text-sm text-slate-500">セッションは特定のシナリオを持つ場合と持たない場合がある</td>
+                </tr>
+                <tr class="hover:bg-slate-50">
+                  <td class="p-4">
+                    <div class="font-semibold text-slate-800">テストアクション</div>
+                    <div class="text-xs text-slate-500">Test Action</div>
+                  </td>
+                  <td class="p-4 text-slate-600">テストセッション内でAIエージェントが実行する個別の操作イベント</td>
+                  <td class="p-4 text-sm text-slate-500">クリック、テキスト入力、スクロール、スワイプ、待機など</td>
+                </tr>
+                <tr class="hover:bg-slate-50">
+                  <td class="p-4">
+                    <div class="font-semibold text-slate-800">バグチケット</div>
+                    <div class="text-xs text-slate-500">Bug Ticket</div>
+                  </td>
+                  <td class="p-4 text-slate-600">検出された不具合に関する情報を集約したレポート</td>
+                  <td class="p-4 text-sm text-slate-500">従来の「不具合カード」に代わる呼称</td>
+                </tr>
+                <tr class="hover:bg-slate-50">
+                  <td class="p-4">
+                    <div class="font-semibold text-slate-800">AIエージェント</div>
+                    <div class="text-xs text-slate-500">AI Agent</div>
+                  </td>
+                  <td class="p-4 text-slate-600">ブラウザを自律的に操作するAIシステム</td>
+                  <td class="p-4 text-sm text-slate-500">機械学習モデルにより画面を解析し最適なアクションを決定</td>
+                </tr>
+                <tr class="hover:bg-slate-50">
+                  <td class="p-4">
+                    <div class="font-semibold text-slate-800">品質ゲート</div>
+                    <div class="text-xs text-slate-500">Quality Gate</div>
+                  </td>
+                  <td class="p-4 text-slate-600">CI/CDパイプラインで品質基準を満たさない場合に自動でデプロイを停止する仕組み</td>
+                  <td class="p-4 text-sm text-slate-500">重要度High以上のバグが発見された場合にブロック</td>
+                </tr>
+                <tr class="hover:bg-slate-50">
+                  <td class="p-4">
+                    <div class="font-semibold text-slate-800">ビジュアルリグレッション</div>
+                    <div class="text-xs text-slate-500">Visual Regression</div>
+                  </td>
+                  <td class="p-4 text-slate-600">UIの見た目の変化を画像比較により自動検出するテスト手法</td>
+                  <td class="p-4 text-sm text-slate-500">Phase 2で実装予定。ピクセル単位での差分検出が可能</td>
+                </tr>
+                <tr class="hover:bg-slate-50">
+                  <td class="p-4">
+                    <div class="font-semibold text-slate-800">HAR</div>
+                    <div class="text-xs text-slate-500">HTTP Archive</div>
+                  </td>
+                  <td class="p-4 text-slate-600">Webブラウザとサーバー間の通信ログを記録するファイル形式</td>
+                  <td class="p-4 text-sm text-slate-500">ネットワークエラーやパフォーマンス問題の分析に使用</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- Footer -->
+      <footer class="text-center mt-20 pt-8 border-t border-slate-200">
+        <div class="mb-4">
+  <script>
+    // サイドバーのアクティブ状態管理
+    function updateActiveNavigation() {
+      const sections = document.querySelectorAll('section[id]');
+      const navLinks = document.querySelectorAll('.sidebar a[href^="#"]');
+
+      let currentSection = '';
+      sections.forEach(section => {
+        const rect = section.getBoundingClientRect();
+        if (rect.top <= 100 && rect.bottom > 100) {
+          currentSection = section.id;
+        }
+      });
+
+      navLinks.forEach(link => {
+        link.classList.remove('active');
+        if (link.getAttribute('href') === `#${currentSection}`) {
+          link.classList.add('active');
+        }
+      });
+    }
+
+    // スクロール時にナビゲーションを更新
+    window.addEventListener('scroll', updateActiveNavigation);
+
+    // ページ読み込み時にナビゲーションを更新
+    document.addEventListener('DOMContentLoaded', updateActiveNavigation);
+
+    // スムーススクロール
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+          target.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+          });
+        }
+      });
+    });
+
+    // アコーディオンのスムーススクロール
+    document.querySelectorAll('details').forEach(detail => {
+      detail.addEventListener('toggle', (event) => {
+        if (detail.open) {
+          setTimeout(() => {
+            detail.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+          }, 100);
+        }
+      });
+    });
+  </script>
+</body>
+</html>

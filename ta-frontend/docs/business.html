@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QA³ ビジネス向け情報 | 料金・導入事例・FAQ</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+
+  <style>
+    body {
+      font-family: 'Inter', 'Noto Sans JP', sans-serif;
+      background-color: #f8fafc;
+    }
+
+    /* サイドバー用のスタイル */
+    .sidebar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 300px;
+      height: 100vh;
+      background: linear-gradient(180deg, #1e293b 0%, #334155 100%);
+      color: white;
+      z-index: 1000;
+      overflow-y: auto;
+      box-shadow: 4px 0 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .main-content {
+      margin-left: 300px;
+      min-height: 100vh;
+    }
+
+    .sidebar a {
+      transition: all 0.2s ease;
+    }
+
+    .sidebar a:hover {
+      background-color: rgba(255, 255, 255, 0.1);
+      transform: translateX(4px);
+    }
+
+    .sidebar a.active {
+      background-color: #10b981;
+    }
+
+    details>summary {
+      list-style: none;
+    }
+
+    details>summary::-webkit-details-marker {
+      display: none;
+    }
+
+    details[open] summary .arrow {
+      transform: rotate(90deg);
+    }
+
+    .arrow {
+      transition: transform 0.2s ease-in-out;
+    }
+
+    @media (max-width: 1024px) {
+      .sidebar {
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+      }
+
+      .sidebar.open {
+        transform: translateX(0);
+      }
+
+      .main-content {
+        margin-left: 0;
+      }
+    }
+  </style>
+</head>
+
+<body class="text-slate-800">
+  <!-- Fixed Sidebar -->
+  <nav class="sidebar">
+    <div class="p-6 border-b border-slate-600">
+      <h2 class="text-xl font-bold text-emerald-400">QA³ ビジネス情報</h2>
+      <p class="text-sm text-slate-300 mt-1">Business Information</p>
+
+      <!-- 切り替えボタン -->
+      <div class="mt-4 flex gap-2">
+        <button onclick="window.location.href='specifications.html'" class="flex-1 bg-slate-600 text-slate-300 px-3 py-2 rounded text-xs hover:bg-slate-500">
+          開発者向け
+        </button>
+        <button class="flex-1 bg-emerald-600 text-white px-3 py-2 rounded text-xs font-semibold">
+          ビジネス向け
+        </button>
+      </div>
+    </div>
+
+    <div class="p-4">
+      <div class="mb-4">
+        <h3 class="text-xs font-bold uppercase tracking-widest text-slate-400 mb-2">サービス概要</h3>
+        <ul class="space-y-1 text-sm">
+          <li><a href="#overview" class="block px-3 py-2 rounded hover:bg-slate-600">🎯 QA³とは</a></li>
+        </ul>
+      </div>
+
+      <div class="mb-4">
+        <h3 class="text-xs font-bold uppercase tracking-widest text-slate-400 mb-2">料金・プラン</h3>
+        <ul class="space-y-1 text-sm">
+          <li><a href="#pricing" class="block px-3 py-2 rounded hover:bg-slate-600">💰 料金プラン</a></li>
+        </ul>
+      </div>
+
+      <div class="mb-4">
+        <h3 class="text-xs font-bold uppercase tracking-widest text-slate-400 mb-2">導入支援</h3>
+        <ul class="space-y-1 text-sm">
+          <li><a href="#case-studies" class="block px-3 py-2 rounded hover:bg-slate-600">📈 導入事例</a></li>
+          <li><a href="#faq" class="block px-3 py-2 rounded hover:bg-slate-600">❓ よくある質問</a></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <div class="container mx-auto p-4 md:p-8">
+
+      <!-- Header -->
+      <header class="text-center mb-16" id="top">
+        <h1 class="text-4xl md:text-6xl font-bold text-slate-900">
+          QA³ <span class="text-emerald-500">|</span> <span class="font-normal text-3xl md:text-5xl text-slate-600">Business</span>
+        </h1>
+        <p class="mt-4 text-xl text-slate-500">AIテスト自動化プラットフォーム ビジネス情報</p>
+        <div class="mt-8 text-slate-600 max-w-4xl mx-auto space-y-4">
+          <p class="text-lg">料金プラン、導入事例、よくある質問など、QA³の導入検討に必要なビジネス情報をまとめています。</p>
+          <div class="flex justify-center gap-4 mt-6">
+            <a href="https://takaiba.github.io/demo-site.github.io/qa3-lp/" target="_blank" rel="noopener noreferrer"
+              class="inline-block bg-emerald-600 text-white font-semibold py-3 px-8 rounded-full hover:bg-emerald-700 transition-colors">
+              🚀 デモを体験する
+            </a>
+            <a href="specifications.html"
+              class="inline-block bg-white text-emerald-600 font-semibold py-3 px-8 border border-emerald-300 rounded-full hover:bg-emerald-50 transition-colors">
+              📖 技術仕様を見る
+            </a>
+          </div>
+        </div>
+      </header>
+
+      <!-- Service Overview -->
+      <section id="overview" class="mb-20">
+        <div class="mb-12">
+          <h2 class="text-sm font-bold uppercase tracking-widest text-emerald-600">Service Overview</h2>
+          <p class="mt-1 text-4xl font-bold text-slate-800">🎯 QA³とは</p>
+          <p class="mt-3 text-lg text-slate-600 max-w-4xl">AIが自律的にWebアプリケーションをテストし、バグを発見・報告する革新的プラットフォームです。</p>
+        </div>
+
+        <!-- QA3の4つの柱 -->
+        <div class="grid md:grid-cols-2 gap-8 mb-12">
+          <div class="bg-white rounded-xl p-8 shadow-lg border border-slate-200">
+            <div class="flex items-center mb-4">
+              <div class="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center">
+                <span class="text-2xl">🤖</span>
+              </div>
+              <h3 class="text-xl font-bold ml-4">1. 自律的な品質検証</h3>
+            </div>
+            <p class="text-slate-600 mb-4">準備やセッティングは不要。AIが自ら「どこを検証すべきか」を学習し、自律的にテストを開始します。</p>
+            <ul class="text-sm text-slate-500 space-y-1">
+              <li>• シナリオ性とランダム性の両立</li>
+              <li>• 機械学習による継続的な学習</li>
+              <li>• エッジケースの自動発見</li>
+            </ul>
+          </div>
+
+          <div class="bg-white rounded-xl p-8 shadow-lg border border-slate-200">
+            <div class="flex items-center mb-4">
+              <div class="w-12 h-12 bg-sky-100 rounded-xl flex items-center justify-center">
+                <span class="text-2xl">📋</span>
+              </div>
+              <h3 class="text-xl font-bold ml-4">2. PMが見てもわかりやすいレポート</h3>
+            </div>
+            <p class="text-slate-600 mb-4">どのような検証をしたのか／不具合再現方法／スクリーンショット／緊急度／原因の予想を含むレポートを自動生成。</p>
+            <ul class="text-sm text-slate-500 space-y-1">
+              <li>• 自動スクリーンショット撮影</li>
+              <li>• 詳細な再現手順</li>
+              <li>• AIによる重要度判定</li>
+            </ul>
+          </div>
+
+          <div class="bg-white rounded-xl p-8 shadow-lg border border-slate-200">
+            <div class="flex items-center mb-4">
+              <div class="w-12 h-12 bg-violet-100 rounded-xl flex items-center justify-center">
+                <span class="text-2xl">🔗</span>
+              </div>
+              <h3 class="text-xl font-bold ml-4">3. シームレスなツール連携</h3>
+            </div>
+            <p class="text-slate-600 mb-4">CI/CD、AIコーディングツール（Cursorがメイン）と連携し、検知された不具合に対して自動でPRを作成。</p>
+            <ul class="text-sm text-slate-500 space-y-1">
+              <li>• GitHub Actions / Jenkins連携</li>
+              <li>• Cursor自動PR作成</li>
+              <li>• 品質ゲート機能</li>
+            </ul>
+          </div>
+
+          <div class="bg-white rounded-xl p-8 shadow-lg border border-slate-200">
+            <div class="flex items-center mb-4">
+              <div class="w-12 h-12 bg-amber-100 rounded-xl flex items-center justify-center">
+                <span class="text-2xl">🎯</span>
+              </div>
+              <h3 class="text-xl font-bold ml-4">4. 高精度な不具合発見</h3>
+            </div>
+            <p class="text-slate-600 mb-4">ソースコード（GitHubリポジトリ）や操作マニュアル／仕様書が提供されると、AIがより精度高くシナリオを生成・実行。</p>
+            <ul class="text-sm text-slate-500 space-y-1">
+              <li>• ソースコード解析</li>
+              <li>• 仕様書理解</li>
+              <li>• 自動質問書発行</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- Pricing -->
+      <section id="pricing" class="mb-20">
+        <div class="mb-12">
+          <h2 class="text-sm font-bold uppercase tracking-widest text-green-600">Pricing</h2>
+          <p class="mt-1 text-4xl font-bold text-slate-800">💰 料金・プラン</p>
+          <p class="mt-3 text-lg text-slate-600 max-w-4xl">柔軟で透明性の高い料金体系で、スタートアップから大企業まで幅広くご利用いただけます。</p>
+        </div>
+
+        <div class="grid md:grid-cols-3 gap-8 mb-12">
+          <!-- Free Trial -->
+          <div class="bg-white rounded-2xl p-8 shadow-lg border border-slate-200 relative">
+            <div class="text-center mb-6">
+              <h3 class="text-2xl font-bold text-slate-800">Free Trial</h3>
+              <div class="mt-4">
+                <span class="text-5xl font-bold text-emerald-600">$0</span>
+                <span class="text-slate-500">/14日間</span>
+              </div>
+              <p class="text-slate-600 mt-2">まずは無料でお試し</p>
+            </div>
+
+            <ul class="space-y-3 text-sm text-slate-600 mb-8">
+              <li class="flex items-center"><span class="text-emerald-500 mr-2">✓</span> 月10回までテスト実行</li>
+              <li class="flex items-center"><span class="text-emerald-500 mr-2">✓</span> 基本レポート機能</li>
+              <li class="flex items-center"><span class="text-emerald-500 mr-2">✓</span> コミュニティサポート</li>
+              <li class="flex items-center"><span class="text-emerald-500 mr-2">✓</span> 3つまでプロジェクト</li>
+              <li class="flex items-center"><span class="text-slate-400 mr-2">×</span> CI/CD連携</li>
+              <li class="flex items-center"><span class="text-slate-400 mr-2">×</span> API アクセス</li>
+            </ul>
+
+            <button class="w-full bg-emerald-500 text-white font-bold py-3 rounded-lg hover:bg-emerald-600 transition-colors">
+              無料で始める
+            </button>
+          </div>
+
+          <!-- Professional -->
+          <div class="bg-white rounded-2xl p-8 shadow-lg border-2 border-sky-500 relative">
+            <div class="absolute -top-4 left-1/2 transform -translate-x-1/2">
+              <span class="bg-sky-500 text-white px-4 py-1 rounded-full text-sm font-semibold">人気</span>
+            </div>
+
+            <div class="text-center mb-6">
+              <h3 class="text-2xl font-bold text-slate-800">Professional</h3>
+              <div class="mt-4">
+                <span class="text-5xl font-bold text-sky-600">$99</span>
+                <span class="text-slate-500">/月</span>
+              </div>
+              <p class="text-slate-600 mt-2">成長するチーム向け</p>
+            </div>
+
+            <ul class="space-y-3 text-sm text-slate-600 mb-8">
+              <li class="flex items-center"><span class="text-emerald-500 mr-2">✓</span> 無制限テスト実行</li>
+              <li class="flex items-center"><span class="text-emerald-500 mr-2">✓</span> 詳細レポート・分析</li>
+              <li class="flex items-center"><span class="text-emerald-500 mr-2">✓</span> メールサポート</li>
+              <li class="flex items-center"><span class="text-emerald-500 mr-2">✓</span> 無制限プロジェクト</li>
+              <li class="flex items-center"><span class="text-emerald-500 mr-2">✓</span> CI/CD連携</li>
+              <li class="flex items-center"><span class="text-emerald-500 mr-2">✓</span> API アクセス</li>
+              <li class="flex items-center"><span class="text-emerald-500 mr-2">✓</span> Slack/Jira連携</li>
+              <li class="flex items-center"><span class="text-emerald-500 mr-2">✓</span> チーム機能（10名まで）</li>
+            </ul>
+
+            <button class="w-full bg-sky-500 text-white font-bold py-3 rounded-lg hover:bg-sky-600 transition-colors">
+              今すぐ始める
+            </button>
+          </div>
+
+          <!-- Enterprise -->
+          <div class="bg-white rounded-2xl p-8 shadow-lg border border-slate-200 relative">
+            <div class="text-center mb-6">
+              <h3 class="text-2xl font-bold text-slate-800">Enterprise</h3>
+              <div class="mt-4">
+                <span class="text-5xl font-bold text-violet-600">カスタム</span>
+              </div>
+              <p class="text-slate-600 mt-2">大規模組織向け</p>
+            </div>
+
+            <ul class="space-y-3 text-sm text-slate-600 mb-8">
+              <li class="flex items-center"><span class="text-emerald-500 mr-2">✓</span> Professionalの全機能</li>
+              <li class="flex items-center"><span class="text-emerald-500 mr-2">✓</span> オンプレミス対応</li>
+              <li class="flex items-center"><span class="text-emerald-500 mr-2">✓</span> 専任サポート</li>
+              <li class="flex items-center"><span class="text-emerald-500 mr-2">✓</span> カスタム機能開発</li>
+              <li class="flex items-center"><span class="text-emerald-500 mr-2">✓</span> SLA保証</li>
+              <li class="flex items-center"><span class="text-emerald-500 mr-2">✓</span> 無制限チーム</li>
+              <li class="flex items-center"><span class="text-emerald-500 mr-2">✓</span> セキュリティ監査</li>
+              <li class="flex items-center"><span class="text-emerald-500 mr-2">✓</span> トレーニング・研修</li>
+            </ul>
+
+            <button class="w-full bg-violet-500 text-white font-bold py-3 rounded-lg hover:bg-violet-600 transition-colors">
+              お問い合わせ
+            </button>
+          </div>
+        </div>
+
+        <!-- 使用量ベース課金 -->
+        <div class="bg-gradient-to-r from-slate-50 to-slate-100 rounded-2xl p-8">
+          <h3 class="text-2xl font-bold text-slate-800 mb-6 text-center">📊 使用量ベース課金（オプション）</h3>
+          <div class="grid md:grid-cols-3 gap-6 text-center">
+            <div>
+              <div class="text-3xl font-bold text-emerald-600 mb-2">$0.50</div>
+              <div class="text-sm text-slate-600">テストセッション単価</div>
+              <div class="text-xs text-slate-500 mt-1">（月1000回以下）</div>
+            </div>
+            <div>
+              <div class="text-3xl font-bold text-sky-600 mb-2">$0.30</div>
+              <div class="text-sm text-slate-600">テストセッション単価</div>
+              <div class="text-xs text-slate-500 mt-1">（月1000-5000回）</div>
+            </div>
+            <div>
+              <div class="text-3xl font-bold text-violet-600 mb-2">$0.20</div>
+              <div class="text-sm text-slate-600">テストセッション単価</div>
+              <div class="text-xs text-slate-500 mt-1">（月5000回以上）</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Case Studies -->
+      <section id="case-studies" class="mb-20">
+        <div class="mb-12">
+          <h2 class="text-sm font-bold uppercase tracking-widest text-purple-600">Case Studies</h2>
+          <p class="mt-1 text-4xl font-bold text-slate-800">📈 導入事例</p>
+          <p class="mt-3 text-lg text-slate-600 max-w-4xl">実際にQA³を導入いただいた企業様の成功事例と具体的な改善効果をご紹介します。</p>
+        </div>
+
+        <div class="space-y-12">
+          <!-- 事例1: SaaSプロバイダ -->
+          <div class="bg-white rounded-2xl p-8 shadow-lg border border-slate-200">
+            <div class="flex items-start gap-6 mb-6">
+              <div class="w-16 h-16 bg-emerald-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                <span class="text-3xl">🚀</span>
+              </div>
+              <div>
+                <h3 class="text-2xl font-bold text-slate-800 mb-2">株式会社ABC（自社開発SaaSプロバイダ）</h3>
+                <p class="text-slate-600 mb-4">従業員数：150名 / 業界：HRTech / 利用期間：8ヶ月</p>
+                <p class="text-slate-700">「QA³導入後、テストスピードが3倍に。リリース後の重大バグゼロを半年間継続しています」</p>
+              </div>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-8 mb-6">
+              <div class="text-center">
+                <div class="text-4xl font-bold text-emerald-600 mb-2">67%</div>
+                <div class="text-sm text-slate-600">テスト工数削減</div>
+                <div class="text-xs text-slate-500 mt-1">月40時間 → 13時間</div>
+              </div>
+              <div class="text-center">
+                <div class="text-4xl font-bold text-sky-600 mb-2">0件</div>
+                <div class="text-sm text-slate-600">重大バグ（半年間）</div>
+                <div class="text-xs text-slate-500 mt-1">以前：月平均2-3件</div>
+              </div>
+              <div class="text-center">
+                <div class="text-4xl font-bold text-violet-600 mb-2">2週間</div>
+                <div class="text-sm text-slate-600">リリースサイクル短縮</div>
+                <div class="text-xs text-slate-500 mt-1">4週間 → 2週間</div>
+              </div>
+            </div>
+
+            <div class="bg-slate-50 p-6 rounded-xl">
+              <h4 class="font-semibold text-slate-800 mb-3">実装の詳細</h4>
+              <div class="grid md:grid-cols-2 gap-4 text-sm text-slate-600">
+                <div>
+                  <strong>導入前の課題:</strong>
+                  <ul class="list-disc list-inside mt-1 space-y-1">
+                    <li>手動テストに依存、リリース直前のバグ発見</li>
+                    <li>QAエンジニアのリソース不足</li>
+                    <li>複雑なユーザーフローのテスト漏れ</li>
+                  </ul>
+                </div>
+                <div>
+                  <strong>QA³による解決策:</strong>
+                  <ul class="list-disc list-inside mt-1 space-y-1">
+                    <li>ハイブリッドモードによる包括的テスト</li>
+                    <li>GitHub Actions連携で自動品質ゲート</li>
+                    <li>Slack通知によるチーム連携強化</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <blockquote class="mt-6 border-l-4 border-emerald-400 pl-4 text-slate-700 italic">
+              「QA³のAIが発見するバグの質が想像以上に高く、人間では見落としがちなエッジケースまで検出してくれます。特に、画面遷移の複雑なフローでのバグ発見率が格段に向上しました。」
+              <footer class="text-sm text-slate-500 mt-2">- CTO 佐藤様</footer>
+            </blockquote>
+          </div>
+
+          <!-- 事例2: ECサイト -->
+          <div class="bg-white rounded-2xl p-8 shadow-lg border border-slate-200">
+            <div class="flex items-start gap-6 mb-6">
+              <div class="w-16 h-16 bg-sky-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                <span class="text-3xl">🛒</span>
+              </div>
+              <div>
+                <h3 class="text-2xl font-bold text-slate-800 mb-2">XYZコマース（大手ECサイト運営）</h3>
+                <p class="text-slate-600 mb-4">従業員数：500名 / 業界：Eコマース / 利用期間：1年</p>
+                <p class="text-slate-700">「レガシーシステムの改修でも問題箇所を瞬時に検知。運用コストが20%削減できました」</p>
+              </div>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-8 mb-6">
+              <div class="text-center">
+                <div class="text-4xl font-bold text-emerald-600 mb-2">20%</div>
+                <div class="text-sm text-slate-600">運用コスト削減</div>
+                <div class="text-xs text-slate-500 mt-1">年間800万円の削減</div>
+              </div>
+              <div class="text-center">
+                <div class="text-4xl font-bold text-sky-600 mb-2">85%</div>
+                <div class="text-sm text-slate-600">バグ検知率向上</div>
+                <div class="text-xs text-slate-500 mt-1">従来手法比</div>
+              </div>
+              <div class="text-center">
+                <div class="text-4xl font-bold text-violet-600 mb-2">48時間</div>
+                <div class="text-sm text-slate-600">最短リードタイム</div>
+                <div class="text-xs text-slate-500 mt-1">修正 → 再テスト → デプロイ</div>
+              </div>
+            </div>
+
+            <div class="bg-slate-50 p-6 rounded-xl">
+              <h4 class="font-semibold text-slate-800 mb-3">特殊な活用事例</h4>
+              <div class="grid md:grid-cols-2 gap-4 text-sm text-slate-600">
+                <div>
+                  <strong>A/Bテスト品質保証:</strong>
+                  <ul class="list-disc list-inside mt-1 space-y-1">
+                    <li>複数パターンの同時テスト実行</li>
+                    <li>デザイン変更によるUX影響の自動検証</li>
+                    <li>コンバージョンファネルの品質チェック</li>
+                  </ul>
+                </div>
+                <div>
+                  <strong>多言語対応サイト:</strong>
+                  <ul class="list-disc list-inside mt-1 space-y-1">
+                    <li>15言語での同時品質チェック</li>
+                    <li>文字化けや表示崩れの自動検出</li>
+                    <li>地域固有の決済フローテスト</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 事例3: フィンテック -->
+          <div class="bg-white rounded-2xl p-8 shadow-lg border border-slate-200">
+            <div class="flex items-start gap-6 mb-6">
+              <div class="w-16 h-16 bg-violet-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                <span class="text-3xl">💳</span>
+              </div>
+              <div>
+                <h3 class="text-2xl font-bold text-slate-800 mb-2">株式会社123（フィンテック）</h3>
+                <p class="text-slate-600 mb-4">従業員数：80名 / 業界：金融IT / 利用期間：6ヶ月</p>
+                <p class="text-slate-700">「金融システムの厳格な品質要件をクリア。セキュリティ関連のバグを99%削減」</p>
+              </div>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-8 mb-6">
+              <div class="text-center">
+                <div class="text-4xl font-bold text-emerald-600 mb-2">99%</div>
+                <div class="text-sm text-slate-600">セキュリティバグ削減</div>
+                <div class="text-xs text-slate-500 mt-1">XSS/CSRF等の検出</div>
+              </div>
+              <div class="text-center">
+                <div class="text-4xl font-bold text-sky-600 mb-2">24/7</div>
+                <div class="text-sm text-slate-600">継続監視体制</div>
+                <div class="text-xs text-slate-500 mt-1">本番環境の品質監視</div>
+              </div>
+              <div class="text-center">
+                <div class="text-4xl font-bold text-violet-600 mb-2">100%</div>
+                <div class="text-sm text-slate-600">コンプライアンス適合</div>
+                <div class="text-xs text-slate-500 mt-1">金融庁ガイドライン準拠</div>
+              </div>
+            </div>
+
+            <div class="bg-slate-50 p-6 rounded-xl">
+              <h4 class="font-semibold text-slate-800 mb-3">金融業界特有の要件対応</h4>
+              <div class="grid md:grid-cols-2 gap-4 text-sm text-slate-600">
+                <div>
+                  <strong>セキュリティ強化:</strong>
+                  <ul class="list-disc list-inside mt-1 space-y-1">
+                    <li>SOC2準拠の監査ログ完全保存</li>
+                    <li>機密データの自動マスキング</li>
+                    <li>暗号化通信の完全性チェック</li>
+                  </ul>
+                </div>
+                <div>
+                  <strong>規制対応:</strong>
+                  <ul class="list-disc list-inside mt-1 space-y-1">
+                    <li>PCI DSSコンプライアンステスト</li>
+                    <li>個人情報保護法準拠チェック</li>
+                    <li>金融庁ガイドライン適合性検証</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 効果まとめ -->
+        <div class="bg-gradient-to-r from-emerald-50 to-sky-50 rounded-2xl p-8 mt-12">
+          <h3 class="text-2xl font-bold text-slate-800 mb-6 text-center">🎯 導入効果サマリー</h3>
+          <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6 text-center">
+            <div>
+              <div class="text-3xl font-bold text-emerald-600 mb-2">平均50%</div>
+              <div class="text-sm text-slate-700 font-semibold">テスト工数削減</div>
+              <div class="text-xs text-slate-500 mt-1">全導入企業平均</div>
+            </div>
+            <div>
+              <div class="text-3xl font-bold text-sky-600 mb-2">85%</div>
+              <div class="text-sm text-slate-700 font-semibold">バグ検知率向上</div>
+              <div class="text-xs text-slate-500 mt-1">従来手法比較</div>
+            </div>
+            <div>
+              <div class="text-3xl font-bold text-violet-600 mb-2">3-10倍</div>
+              <div class="text-sm text-slate-700 font-semibold">テスト実行速度</div>
+              <div class="text-xs text-slate-500 mt-1">手動テスト比較</div>
+            </div>
+            <div>
+              <div class="text-3xl font-bold text-amber-600 mb-2">ROI 300%</div>
+              <div class="text-sm text-slate-700 font-semibold">投資対効果</div>
+              <div class="text-xs text-slate-500 mt-1">1年以内に投資回収</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 業界別実績 -->
+        <div class="bg-white rounded-2xl p-8 shadow-lg border border-slate-200 mt-8">
+          <h3 class="text-xl font-bold text-slate-800 mb-6 text-center">🏭 業界別導入実績</h3>
+          <div class="grid md:grid-cols-3 lg:grid-cols-6 gap-4 text-center">
+            <div class="p-4">
+              <div class="text-2xl mb-2">🚀</div>
+              <div class="text-sm font-semibold text-slate-700">SaaS</div>
+              <div class="text-xs text-slate-500">15社</div>
+            </div>
+            <div class="p-4">
+              <div class="text-2xl mb-2">🛒</div>
+              <div class="text-sm font-semibold text-slate-700">Eコマース</div>
+              <div class="text-xs text-slate-500">12社</div>
+            </div>
+            <div class="p-4">
+              <div class="text-2xl mb-2">💳</div>
+              <div class="text-sm font-semibold text-slate-700">フィンテック</div>
+              <div class="text-xs text-slate-500">8社</div>
+            </div>
+            <div class="p-4">
+              <div class="text-2xl mb-2">🏥</div>
+              <div class="text-sm font-semibold text-slate-700">ヘルスケア</div>
+              <div class="text-xs text-slate-500">6社</div>
+            </div>
+            <div class="p-4">
+              <div class="text-2xl mb-2">🎓</div>
+              <div class="text-sm font-semibold text-slate-700">EdTech</div>
+              <div class="text-xs text-slate-500">9社</div>
+            </div>
+            <div class="p-4">
+              <div class="text-2xl mb-2">🏢</div>
+              <div class="text-sm font-semibold text-slate-700">エンタープライズ</div>
+              <div class="text-xs text-slate-500">11社</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- FAQ -->
+      <section id="faq" class="mb-20">
+        <div class="mb-12">
+          <h2 class="text-sm font-bold uppercase tracking-widest text-sky-600">FAQ</h2>
+          <p class="mt-1 text-4xl font-bold text-slate-800">❓ よくある質問</p>
+          <p class="mt-3 text-lg text-slate-600 max-w-4xl">QA³の導入・運用に関してよく寄せられる質問と回答をまとめました。</p>
+        </div>
+
+        <div class="space-y-4">
+          <details class="bg-white rounded-lg border border-slate-200 shadow-sm">
+            <summary class="p-6 cursor-pointer font-semibold text-slate-800 hover:text-emerald-600">
+              Q1. 既存のCI/CDツールとすぐに連携できますか？
+            </summary>
+            <div class="px-6 pb-6 text-slate-600">
+              <p class="mb-4">はい。Jenkins、GitLab CI、CircleCI、GitHub Actionsなど主要なCI/CDとプラグイン連携やAPI連携が可能です。</p>
+              <div class="bg-slate-50 p-4 rounded">
+                <h4 class="font-semibold mb-2">対応CI/CDツール</h4>
+                <ul class="list-disc list-inside text-sm space-y-1">
+                  <li>GitHub Actions（YAML設定例提供）</li>
+                  <li>GitLab CI/CD（.gitlab-ci.ymlテンプレート提供）</li>
+                  <li>Jenkins（プラグイン形式で提供）</li>
+                  <li>CircleCI（Orb形式で提供）</li>
+                  <li>Azure DevOps（Extension形式で提供）</li>
+                </ul>
+              </div>
+            </div>
+          </details>
+
+          <details class="bg-white rounded-lg border border-slate-200 shadow-sm">
+            <summary class="p-6 cursor-pointer font-semibold text-slate-800 hover:text-emerald-600">
+              Q2. テスト実行に必要な環境構築はどれくらい時間がかかりますか？
+            </summary>
+            <div class="px-6 pb-6 text-slate-600">
+              <p class="mb-4">最短で1営業日以内に仮想環境構築～テストシナリオ作成を完了します。導入時は専任チームがサポートしますので安心です。</p>
+              <div class="bg-slate-50 p-4 rounded">
+                <h4 class="font-semibold mb-2">導入フロー</h4>
+                <ol class="list-decimal list-inside text-sm space-y-1">
+                  <li>アカウント作成・初期設定（30分）</li>
+                  <li>テスト対象システムの接続確認（1時間）</li>
+                  <li>初回シナリオ作成・実行（2時間）</li>
+                  <li>CI/CD連携設定（オプション、2時間）</li>
+                </ol>
+              </div>
+            </div>
+          </details>
+
+          <details class="bg-white rounded-lg border border-slate-200 shadow-sm">
+            <summary class="p-6 cursor-pointer font-semibold text-slate-800 hover:text-emerald-600">
+              Q3. セキュリティ環境での利用は問題ありませんか？
+            </summary>
+            <div class="px-6 pb-6 text-slate-600">
+              <p class="mb-4">SOC2 Type II準拠のクラウド環境を利用しており、情報漏洩防止のために各種セキュリティ対策を実施しています。</p>
+              <div class="bg-slate-50 p-4 rounded">
+                <h4 class="font-semibold mb-2">セキュリティ対策</h4>
+                <ul class="list-disc list-inside text-sm space-y-1">
+                  <li>データ暗号化（保存時・転送時）</li>
+                  <li>VPN接続対応</li>
+                  <li>IP制限・アクセス制御</li>
+                  <li>監査ログの完全保存</li>
+                  <li>定期的なセキュリティ診断実施</li>
+                </ul>
+              </div>
+            </div>
+          </details>
+
+          <details class="bg-white rounded-lg border border-slate-200 shadow-sm">
+            <summary class="p-6 cursor-pointer font-semibold text-slate-800 hover:text-emerald-600">
+              Q4. 料金体系はどのようになっていますか？
+            </summary>
+            <div class="px-6 pb-6 text-slate-600">
+              <p class="mb-4">使用量ベースの柔軟な料金体系を採用しており、小規模チームから大企業まで対応可能です。</p>
+              <div class="grid md:grid-cols-3 gap-4 mt-4">
+                <div class="bg-slate-50 p-4 rounded">
+                  <h5 class="font-semibold mb-2">Free Trial</h5>
+                  <div class="text-2xl font-bold text-emerald-600 mb-1">$0</div>
+                  <p class="text-xs text-slate-500 mb-2">14日間無料</p>
+                  <ul class="text-xs space-y-1">
+                    <li>• 月10回まで実行</li>
+                    <li>• 基本レポート</li>
+                    <li>• コミュニティサポート</li>
+                  </ul>
+                </div>
+                <div class="bg-slate-50 p-4 rounded">
+                  <h5 class="font-semibold mb-2">Professional</h5>
+                  <div class="text-2xl font-bold text-sky-600 mb-1">$99</div>
+                  <p class="text-xs text-slate-500 mb-2">月額/プロジェクト</p>
+                  <ul class="text-xs space-y-1">
+                    <li>• 無制限実行</li>
+                    <li>• 詳細レポート</li>
+                    <li>• CI/CD連携</li>
+                    <li>• メールサポート</li>
+                  </ul>
+                </div>
+                <div class="bg-slate-50 p-4 rounded">
+                  <h5 class="font-semibold mb-2">Enterprise</h5>
+                  <div class="text-2xl font-bold text-violet-600 mb-1">カスタム</div>
+                  <p class="text-xs text-slate-500 mb-2">要相談</p>
+                  <ul class="text-xs space-y-1">
+                    <li>• オンプレミス対応</li>
+                    <li>• カスタム機能開発</li>
+                    <li>• 専任サポート</li>
+                    <li>• SLA保証</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </details>
+        </div>
+      </section>
+
+      <!-- Footer -->
+      <footer class="text-center mt-20 pt-8 border-t border-slate-200">
+        <div class="mb-4">
+          <p class="text-slate-600">&copy; 2024 QA³. All rights reserved.</p>
+        </div>
+      </footer>
+
+    </div>
+  </div>
+
+  <script>
+    // サイドバーのアクティブ状態管理
+    function updateActiveNavigation() {
+      const sections = document.querySelectorAll('section[id]');
+      const navLinks = document.querySelectorAll('.sidebar a[href^="#"]');
+
+      let currentSection = '';
+      sections.forEach(section => {
+        const rect = section.getBoundingClientRect();
+        if (rect.top <= 100 && rect.bottom > 100) {
+          currentSection = section.id;
+        }
+      });
+
+      navLinks.forEach(link => {
+        link.classList.remove('active');
+        if (link.getAttribute('href') === `#${currentSection}`) {
+          link.classList.add('active');
+        }
+      });
+    }
+
+    // スクロール時にナビゲーションを更新
+    window.addEventListener('scroll', updateActiveNavigation);
+
+    // ページ読み込み時にナビゲーションを更新
+    document.addEventListener('DOMContentLoaded', updateActiveNavigation);
+
+    // スムーススクロール
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+          target.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+          });
+        }
+      });
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,19 @@
+services:
+  postgres_db:
+    container_name: postgres_ta
+    image: postgres:15
+    volumes:
+      - postgres_data:/var/lib/postgresql
+      - ./docker/scripts/setup.sh:/scripts/setup.sh
+    environment:
+      POSTGRES_DB: $POSTGRES_DB
+      POSTGRES_USER: $POSTGRES_USER
+      POSTGRES_APP_USER: $POSTGRES_APP_USER
+      POSTGRES_PASSWORD: $POSTGRES_PASSWORD
+      PGDATA: /var/lib/postgresql/data/ta-frontend
+    ports:
+      - "5432:5432"
+    restart: "no"
+    command: ["postgres", "-c", "log_statement=all"] # ログを全て出力する
+volumes:
+  postgres_data:

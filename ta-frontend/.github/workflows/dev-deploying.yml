@@ -1,0 +1,36 @@
+name: docker-build-push [dev]
+on:
+  push:
+    branches:
+      - release
+  workflow_dispatch:
+
+jobs:
+  build:
+    uses: ./.github/workflows/build.yml
+    with:
+      PROJECT_ID: ta-project-and-dot
+      GAR_LOCATION: asia-northeast1
+      GKE_ZONE: asia-northeast1-a
+      DEPLOYMENT_NAME: ta-frontend
+      REPOSITORY: common-repository
+      IMAGE: ta-frontend
+      SERVICE_ACCOUNT: workload-identity-github-sa@ta-project-and-dot.iam.gserviceaccount.com
+      WORKLOAD_IDENTITY_PROVIDER: projects/794880215231/locations/global/workloadIdentityPools/common-github-pool/providers/common-github-pool-provider
+
+  ta-frontend:
+    uses: ./.github/workflows/deploy.yml
+    needs: build
+    with:
+      PROJECT_ID: ta-project-and-dot
+      GAR_LOCATION: asia-northeast1
+      # TODO: クラスター名の設定
+      GKE_CLUSTER: ta-cluster-202308261708
+      GKE_ZONE: asia-northeast1-a
+      NAMESPACE: dev-ta-projects
+      DEPLOY_ENV: dev
+      DEPLOYMENT_NAME: ta-frontend
+      REPOSITORY: common-repository
+      IMAGE: ta-frontend
+      SERVICE_ACCOUNT: workload-identity-github-sa@ta-project-and-dot.iam.gserviceaccount.com
+      WORKLOAD_IDENTITY_PROVIDER: projects/794880215231/locations/global/workloadIdentityPools/common-github-pool/providers/common-github-pool-provider
