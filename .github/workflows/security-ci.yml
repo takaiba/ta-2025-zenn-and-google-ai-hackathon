@@ -1,0 +1,61 @@
+name: Security dependency CI
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "ta-frontend/**"
+      - "ta-backend-ml/requirements.txt"
+      - ".github/workflows/security-ci.yml"
+
+jobs:
+  frontend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: ta-frontend
+    env:
+      POSTGRES_DB: test
+      POSTGRES_USER: test
+      POSTGRES_APP_USER: test
+      POSTGRES_PASSWORD: test
+      DATABASE_ROOT_URL: postgresql://test:test@localhost:5432/test
+      DATABASE_APP_URL: postgresql://test:test@localhost:5432/test
+      AUTH0_SECRET: test
+      APP_BASE_URL: http://localhost:3000
+      AUTH0_DOMAIN: example.com
+      AUTH0_CLIENT_ID: test
+      AUTH0_CLIENT_SECRET: test
+      DEFAULT_TENANT_ID: test
+      DEFAULT_ADMIN_EMAIL: test@example.com
+      SLACK_CLIENT_ID: test
+      SLACK_CLIENT_SECRET: test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.12.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20.18.3
+          cache: pnpm
+          cache-dependency-path: ta-frontend/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+
+  backend-dependencies:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: ta-backend-ml
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: ta-backend-ml/requirements.txt
+      - run: pip install --dry-run -r requirements.txt
+      - run: python -m compileall project
