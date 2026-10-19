@@ -42,6 +42,7 @@ jobs:
           cache: pnpm
           cache-dependency-path: ta-frontend/pnpm-lock.yaml
       - run: pnpm install --frozen-lockfile
+      - run: pnpm prisma generate
       - run: pnpm build
 
   backend-dependencies:
