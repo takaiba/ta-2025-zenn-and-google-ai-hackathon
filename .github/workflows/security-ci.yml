@@ -75,6 +75,7 @@ jobs:
       - name: Demonstrate both regressions on vulnerable Gunicorn
         run: |
           pip install gunicorn==21.2.0 Django==4.2.27
+          python scripts/test_gunicorn_security.py -k test_valid_
           set +e
           python scripts/test_gunicorn_security.py -k test_cve_ > baseline.log 2>&1
           result=$?
