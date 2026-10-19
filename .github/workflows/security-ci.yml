@@ -6,6 +6,7 @@ on:
     paths:
       - "ta-frontend/**"
       - "ta-backend-ml/requirements.txt"
+      - "ta-backend-ml/scripts/test_gunicorn_security.py"
       - ".github/workflows/security-ci.yml"
 
 jobs:
@@ -59,3 +60,30 @@ jobs:
           cache-dependency-path: ta-backend-ml/requirements.txt
       - run: pip install --dry-run -r requirements.txt
       - run: python -m compileall project
+
+  gunicorn-security:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    defaults:
+      run:
+        working-directory: ta-backend-ml
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Demonstrate both regressions on vulnerable Gunicorn
+        run: |
+          pip install gunicorn==21.2.0 Django==4.2.27
+          set +e
+          python scripts/test_gunicorn_security.py -k test_cve_ > baseline.log 2>&1
+          result=$?
+          set -e
+          cat baseline.log
+          test "$result" -ne 0
+          grep -q 'FAILED (failures=2)' baseline.log
+      - name: Verify patched framing and Django threaded WSGI compatibility
+        run: |
+          pip install "$(grep '^gunicorn==' requirements.txt)"
+          pip check
+          python scripts/test_gunicorn_security.py
