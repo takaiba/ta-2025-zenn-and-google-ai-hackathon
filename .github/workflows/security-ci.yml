@@ -43,6 +43,7 @@ jobs:
           cache: pnpm
           cache-dependency-path: ta-frontend/pnpm-lock.yaml
       - run: pnpm install --frozen-lockfile
+      - run: node --test scripts/test-lodash-security.cjs
       - run: pnpm prisma generate
       - run: pnpm build
 
