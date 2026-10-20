@@ -1,12 +1,12 @@
 requests==2.32.4
 python-dotenv==1.0.0
-Django==4.2.27
+Django==5.2.18
 google-cloud-aiplatform==1.63.0
 google-cloud-discoveryengine==0.13.4
 google-api-core==2.11.1
 tiktoken==0.4.0
 bs4==0.0.1
-sentry-sdk[django]==1.29.2
+sentry-sdk[django]==1.45.1
 # janome==0.4.2  # 未使用
 # chardet==5.2.0  # 未使用
 anthropic==0.40.0
