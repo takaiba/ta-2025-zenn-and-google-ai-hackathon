@@ -7,6 +7,7 @@ on:
       - "ta-frontend/**"
       - "ta-backend-ml/requirements.txt"
       - "ta-backend-ml/scripts/test_gunicorn_security.py"
+      - "ta-backend-ml/scripts/test_django_security.py"
       - ".github/workflows/security-ci.yml"
 
 jobs:
@@ -62,6 +63,35 @@ jobs:
       - run: pip install --dry-run -r requirements.txt
       - run: python -m compileall project
 
+  django-security:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    defaults:
+      run:
+        working-directory: ta-backend-ml
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Verify baseline compatibility and reproduce both Django vulnerabilities
+        run: |
+          pip install Django==4.2.27 celery==5.3.4 'sentry-sdk[django]==1.29.2'
+          python scripts/test_django_security.py ApplicationCompatibilityTests
+          set +e
+          python scripts/test_django_security.py DjangoSecurityTests > django-baseline.log 2>&1
+          result=$?
+          set -e
+          cat django-baseline.log
+          test "$result" -ne 0
+          grep -q 'FAILED (failures=2)' django-baseline.log
+      - name: Verify fixed Django and application compatibility
+        run: |
+          pip install "$(grep '^Django==' requirements.txt)" "$(grep '^sentry-sdk' requirements.txt)" mypy
+          pip check
+          python scripts/test_django_security.py
+          mypy --follow-imports=skip --ignore-missing-imports --check-untyped-defs scripts/test_django_security.py
+
   gunicorn-security:
     runs-on: ubuntu-latest
     timeout-minutes: 5
@@ -86,6 +116,6 @@ jobs:
           grep -q 'FAILED (failures=2)' baseline.log
       - name: Verify patched framing and Django threaded WSGI compatibility
         run: |
-          pip install "$(grep '^gunicorn==' requirements.txt)"
+          pip install "$(grep '^gunicorn==' requirements.txt)" "$(grep '^Django==' requirements.txt)"
           pip check
           python scripts/test_gunicorn_security.py
