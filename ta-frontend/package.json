@@ -28,7 +28,7 @@
     "clsx": "^2.1.1",
     "cmdk-base": "^0.0.3",
     "dayjs": "^1.11.13",
-    "lodash": "^4.17.21",
+    "lodash": "^4.18.1",
     "next": "15.5.28",
     "openai": "^5.0.1",
     "playwright": "^1.52.0",
@@ -70,6 +70,7 @@
   "pnpm": {
     "overrides": {
       "fast-xml-parser": "4.5.4",
+      "lodash": "^4.18.1",
       "protobufjs": "7.6.5"
     }
   },
