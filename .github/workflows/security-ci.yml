@@ -1,4 +1,4 @@
-name: Security dependency CI
+﻿name: Security dependency CI
 
 on:
   pull_request:
@@ -12,7 +12,7 @@ on:
 
 jobs:
   frontend:
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     timeout-minutes: 20
     defaults:
       run:
@@ -49,7 +49,7 @@ jobs:
       - run: pnpm build
 
   backend-dependencies:
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     timeout-minutes: 20
     defaults:
       run:
@@ -65,7 +65,7 @@ jobs:
       - run: python -m compileall project
 
   django-security:
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     timeout-minutes: 5
     defaults:
       run:
@@ -94,7 +94,7 @@ jobs:
           mypy --follow-imports=skip --ignore-missing-imports --check-untyped-defs scripts/test_django_security.py
 
   gunicorn-security:
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     timeout-minutes: 5
     defaults:
       run:
