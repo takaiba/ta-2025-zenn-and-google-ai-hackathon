@@ -32,7 +32,7 @@
     "next": "15.5.28",
     "openai": "^5.0.1",
     "playwright": "^1.52.0",
-    "postcss": "^8.5.3",
+    "postcss": "^8.5.31",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-hook-form": "^7.54.2",
@@ -44,7 +44,7 @@
     "sonner": "^2.0.1",
     "superjson": "^2.2.2",
     "tailwindcss": "^4.0.9",
-    "zod": "^3.24.1",
+    "zod": "^4.6.7",
     "zustand": "^5.0.3"
   },
   "devDependencies": {
@@ -71,7 +71,11 @@
     "overrides": {
       "fast-xml-parser": "4.5.7",
       "lodash": "^4.18.1",
-      "protobufjs": "7.6.5"
+      "nanoid": "^3.3.20",
+      "postcss": "^8.5.31",
+      "protobufjs": "7.6.5",
+      "sharp": "^0.35.5",
+      "source-map-js": "^1.2.2"
     }
   },
   "packageManager": "pnpm@9.12.0"
