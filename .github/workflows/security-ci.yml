@@ -10,6 +10,7 @@ on:
       - "ta-backend-ml/scripts/test_django_security.py"
       - ".github/workflows/security-ci.yml"
       - ".github/workflows/security-checks.yml"
+      - "scripts/test-security-ci-policy.mjs"
 
   workflow_dispatch:
 
@@ -18,5 +19,5 @@ permissions:
 
 jobs:
   checks:
-    if: ${{ github.repository == 'takaiba/ta-2025-zenn-and-google-ai-hackathon' && github.actor == 'p0x0q' && ((github.event_name == 'pull_request' && github.base_ref == 'main' && github.event.pull_request.head.repo.full_name == github.repository) || (github.event_name == 'workflow_dispatch' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/codex/27978-selfhosted-linux'))) }}
-    uses: takaiba/ta-2025-zenn-and-google-ai-hackathon/.github/workflows/security-checks.yml@082b966753077e7f4e87ff2ef463b8f2e275cf29
+    # Always report admission refusal as a failed check; never silently skip security.
+    uses: takaiba/ta-2025-zenn-and-google-ai-hackathon/.github/workflows/security-checks.yml@02cd914e78faae9457565bba28548dde8db9012e
