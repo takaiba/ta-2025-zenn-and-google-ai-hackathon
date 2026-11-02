@@ -4,10 +4,104 @@ on:
 permissions:
   contents: read
 
-# Full-SHA-pinned runner-group boundary. Forks and unapproved actors never get a VM.
+# Runner-group access pins this reviewed reusable workflow to a full SHA.
+# Admission executes fixed code only, with no checkout; refusal is a failure, not a skipped security result.
 jobs:
+  admission:
+    runs-on: { group: public-ci-trusted, labels: [linux-vm] }
+    timeout-minutes: 3
+    steps:
+      - name: Verify the dedicated disposable public VM
+        working-directory: ${{ runner.temp }}
+        shell: bash
+        run: |
+          #!/usr/bin/env bash
+          set -euo pipefail
+          
+          # The fixed infra-mcp JIT pool reboots after one job, discarding its overlayroot
+          # and scratch disk. Never run these effects in an ARC container or a live node.
+          test "${RUNNER_ENVIRONMENT:-}" = self-hosted
+          test "${RUNNER_OS:-}" = Linux
+          test "${RUNNER_ARCH:-}" = X64
+          # Fixed takaiba pools in the Shibuya/Tochigi JIT manifests. The broker adds a
+          # six-hex registration suffix; 08 is another org and 28 is the Android pool.
+          if [[ ! ${RUNNER_NAME:-} =~ ^gha-linux-25(-[a-f0-9]{6})?$ ]]; then
+            echo 'Unrecognized Linux VM runner' >&2; exit 1
+          fi
+          test "$(id -u)" -ne 0
+          systemd-detect-virt --vm --quiet
+          if systemd-detect-virt --container --quiet; then echo 'Container runner refused' >&2; exit 1; fi
+          mountpoint -q /media/root-ro
+          test "$(findmnt -n -o FSTYPE /)" = overlay
+          test "$(findmnt -n -o FSTYPE /run)" = tmpfs
+          case ",$(findmnt -n -o OPTIONS /media/root-ro)," in *,ro,*) ;; *) echo 'Read-only VM base required' >&2; exit 1 ;; esac
+          # mkdir is intentionally not idempotent: a second job in the same boot refuses.
+          sudo mkdir -m 0700 /run/takaiba-ci-first-job
+          sudo mount -o remount,exec /run
+          python3 - <<'PY' | tee "$RUNNER_TEMP/linux-vm-proof.json"
+          import json, os, platform
+          print(json.dumps({"runnerName": os.environ["RUNNER_NAME"], "runId": os.environ["GITHUB_RUN_ID"],
+              "runAttempt": os.environ["GITHUB_RUN_ATTEMPT"], "kernel": platform.release(),
+              "bootId": open('/proc/sys/kernel/random/boot_id').read().strip(),
+              "readOnlyBase": True, "overlayRoot": True, "firstJobThisBoot": True}))
+          PY
+      - name: Require live repository write permission before any source checkout
+        working-directory: ${{ runner.temp }}
+        shell: bash
+        env:
+          CI_REPOSITORY: ${{ github.repository }}
+          CI_REPOSITORY_OWNER: ${{ github.repository_owner }}
+          CI_EVENT: ${{ github.event_name }}
+          CI_REF: ${{ github.ref }}
+          CI_SHA: ${{ github.sha }}
+          CI_WORKFLOW_REF: ${{ github.workflow_ref }}
+          CI_BASE_REF: ${{ github.base_ref }}
+          CI_HEAD_REPOSITORY: ${{ github.event.pull_request.head.repo.full_name }}
+          CI_TRIGGERING_ACTOR: ${{ github.triggering_actor }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          node --input-type=module <<'PUBLIC_CI_ADMISSION'
+          // BEGIN PUBLIC_CI_ADMISSION
+          export const REPOSITORY = 'takaiba/ta-2025-zenn-and-google-ai-hackathon';
+          export function sourceAllowed(e) {
+            if (e.CI_REPOSITORY !== REPOSITORY || e.CI_REPOSITORY_OWNER !== 'takaiba') return false;
+            if (e.CI_WORKFLOW_REF !== REPOSITORY + '/.github/workflows/security-ci.yml@' + e.CI_REF || !/^[0-9a-f]{40}$/.test(e.CI_SHA ?? '')) return false;
+            if (e.CI_EVENT === 'pull_request') return e.CI_BASE_REF === 'main' && e.CI_HEAD_REPOSITORY === REPOSITORY && /^refs\/pull\/[1-9][0-9]*\/merge$/.test(e.CI_REF ?? '');
+            return e.CI_EVENT === 'workflow_dispatch' && ['refs/heads/main', 'refs/heads/codex/27978-selfhosted-linux'].includes(e.CI_REF);
+          }
+          export function writable(status, body, actor) {
+            return status === 200 && body && ['write', 'maintain', 'admin'].includes(body.permission) && typeof body.user?.login === 'string' && body.user.login.toLowerCase() === actor.toLowerCase();
+          }
+          export async function admit(e, request = fetch) {
+            if (!sourceAllowed(e)) throw new Error('source-not-trusted');
+            const actor = e.CI_TRIGGERING_ACTOR;
+            if (typeof actor !== 'string' || !/^[a-zA-Z0-9][a-zA-Z0-9-]{0,38}(?:\[bot\])?$/.test(actor) || !e.GH_TOKEN) throw new Error('identity-unavailable');
+            let response, body;
+            try {
+              response = await request('https://api.github.com/repos/' + REPOSITORY + '/collaborators/' + encodeURIComponent(actor) + '/permission', {
+                method: 'GET', redirect: 'error', signal: AbortSignal.timeout(15000),
+                headers: { Authorization: 'Bearer ' + e.GH_TOKEN, Accept: 'application/vnd.github+json', 'X-GitHub-Api-Version': '2022-11-28' },
+              });
+              body = await response.json();
+            } catch { throw new Error('permission-unavailable'); }
+            if (!writable(response.status, body, actor)) throw new Error('repository-write-review-required');
+            return 'approved';
+          }
+          export async function admissionExit(e, request = fetch) {
+            try { await admit(e, request); return { code: 0, message: 'security-admission=approved:live-repository-write-permission' }; }
+            catch (error) {
+              const reasons = new Set(['source-not-trusted', 'identity-unavailable', 'permission-unavailable', 'repository-write-review-required']);
+              const reason = reasons.has(error?.message) ? error.message : 'permission-unavailable';
+              return { code: 1, message: '::error::Security verification blocked; repository writer review required (' + reason + ')' };
+            }
+          }
+          // END PUBLIC_CI_ADMISSION
+          const result = await admissionExit(process.env);
+          console.log(result.message);
+          process.exitCode = result.code;
+          PUBLIC_CI_ADMISSION
   frontend:
-    if: ${{ github.repository == 'takaiba/ta-2025-zenn-and-google-ai-hackathon' && github.actor == 'p0x0q' && ((github.event_name == 'pull_request' && github.base_ref == 'main' && github.event.pull_request.head.repo.full_name == github.repository) || (github.event_name == 'workflow_dispatch' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/codex/27978-selfhosted-linux'))) }}
+    needs: admission
     runs-on: { group: public-ci-trusted, labels: [linux-vm] }
     timeout-minutes: 20
     defaults:
@@ -67,6 +161,9 @@ jobs:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
+      - name: Verify security admission and aggregate refusal policy
+        working-directory: ${{ github.workspace }}
+        run: node scripts/test-security-ci-policy.mjs
       - uses: pnpm/action-setup@v4
         with:
           version: 9.12.0
@@ -81,7 +178,7 @@ jobs:
       - run: pnpm build
 
   backend-dependencies:
-    if: ${{ github.repository == 'takaiba/ta-2025-zenn-and-google-ai-hackathon' && github.actor == 'p0x0q' && ((github.event_name == 'pull_request' && github.base_ref == 'main' && github.event.pull_request.head.repo.full_name == github.repository) || (github.event_name == 'workflow_dispatch' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/codex/27978-selfhosted-linux'))) }}
+    needs: admission
     runs-on: { group: public-ci-trusted, labels: [linux-vm] }
     timeout-minutes: 20
     defaults:
@@ -134,7 +231,7 @@ jobs:
       - run: python -m compileall project
 
   django-security:
-    if: ${{ github.repository == 'takaiba/ta-2025-zenn-and-google-ai-hackathon' && github.actor == 'p0x0q' && ((github.event_name == 'pull_request' && github.base_ref == 'main' && github.event.pull_request.head.repo.full_name == github.repository) || (github.event_name == 'workflow_dispatch' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/codex/27978-selfhosted-linux'))) }}
+    needs: admission
     runs-on: { group: public-ci-trusted, labels: [linux-vm] }
     timeout-minutes: 5
     defaults:
@@ -200,7 +297,7 @@ jobs:
           mypy --follow-imports=skip --ignore-missing-imports --check-untyped-defs scripts/test_django_security.py
 
   gunicorn-security:
-    if: ${{ github.repository == 'takaiba/ta-2025-zenn-and-google-ai-hackathon' && github.actor == 'p0x0q' && ((github.event_name == 'pull_request' && github.base_ref == 'main' && github.event.pull_request.head.repo.full_name == github.repository) || (github.event_name == 'workflow_dispatch' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/codex/27978-selfhosted-linux'))) }}
+    needs: admission
     runs-on: { group: public-ci-trusted, labels: [linux-vm] }
     timeout-minutes: 5
     defaults:
@@ -263,3 +360,61 @@ jobs:
           pip install "$(grep '^gunicorn==' requirements.txt)" "$(grep '^Django==' requirements.txt)"
           pip check
           python scripts/test_gunicorn_security.py
+  security-result:
+    if: ${{ always() }}
+    needs: [admission, frontend, backend-dependencies, django-security, gunicorn-security]
+    runs-on: { group: public-ci-trusted, labels: [linux-vm] }
+    timeout-minutes: 3
+    steps:
+      - name: Verify the dedicated disposable public VM
+        working-directory: ${{ runner.temp }}
+        shell: bash
+        run: |
+          #!/usr/bin/env bash
+          set -euo pipefail
+          
+          # The fixed infra-mcp JIT pool reboots after one job, discarding its overlayroot
+          # and scratch disk. Never run these effects in an ARC container or a live node.
+          test "${RUNNER_ENVIRONMENT:-}" = self-hosted
+          test "${RUNNER_OS:-}" = Linux
+          test "${RUNNER_ARCH:-}" = X64
+          # Fixed takaiba pools in the Shibuya/Tochigi JIT manifests. The broker adds a
+          # six-hex registration suffix; 08 is another org and 28 is the Android pool.
+          if [[ ! ${RUNNER_NAME:-} =~ ^gha-linux-25(-[a-f0-9]{6})?$ ]]; then
+            echo 'Unrecognized Linux VM runner' >&2; exit 1
+          fi
+          test "$(id -u)" -ne 0
+          systemd-detect-virt --vm --quiet
+          if systemd-detect-virt --container --quiet; then echo 'Container runner refused' >&2; exit 1; fi
+          mountpoint -q /media/root-ro
+          test "$(findmnt -n -o FSTYPE /)" = overlay
+          test "$(findmnt -n -o FSTYPE /run)" = tmpfs
+          case ",$(findmnt -n -o OPTIONS /media/root-ro)," in *,ro,*) ;; *) echo 'Read-only VM base required' >&2; exit 1 ;; esac
+          # mkdir is intentionally not idempotent: a second job in the same boot refuses.
+          sudo mkdir -m 0700 /run/takaiba-ci-first-job
+          sudo mount -o remount,exec /run
+          python3 - <<'PY' | tee "$RUNNER_TEMP/linux-vm-proof.json"
+          import json, os, platform
+          print(json.dumps({"runnerName": os.environ["RUNNER_NAME"], "runId": os.environ["GITHUB_RUN_ID"],
+              "runAttempt": os.environ["GITHUB_RUN_ATTEMPT"], "kernel": platform.release(),
+              "bootId": open('/proc/sys/kernel/random/boot_id').read().strip(),
+              "readOnlyBase": True, "overlayRoot": True, "firstJobThisBoot": True}))
+          PY
+      - name: Require every security check, including admission, to succeed
+        shell: bash
+        env:
+          RESULT_0: ${{ needs.admission.result }}
+          RESULT_1: ${{ needs.frontend.result }}
+          RESULT_2: ${{ needs.backend-dependencies.result }}
+          RESULT_3: ${{ needs.django-security.result }}
+          RESULT_4: ${{ needs.gunicorn-security.result }}
+        run: |
+          # BEGIN SECURITY_RESULT
+          for result in "$RESULT_0" "$RESULT_1" "$RESULT_2" "$RESULT_3" "$RESULT_4"; do
+            if [[ "$result" != success ]]; then
+              echo '::error::Security verification blocked or incomplete; repository writer review required'
+              exit 1
+            fi
+          done
+          echo 'security-verification=passed'
+          # END SECURITY_RESULT
