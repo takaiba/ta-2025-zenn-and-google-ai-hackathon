@@ -30,6 +30,40 @@ jobs:
       SLACK_CLIENT_ID: test
       SLACK_CLIENT_SECRET: test
     steps:
+      - name: Verify the dedicated disposable public VM
+        working-directory: ${{ runner.temp }}
+        shell: bash
+        run: |
+          #!/usr/bin/env bash
+          set -euo pipefail
+          
+          # The fixed infra-mcp JIT pool reboots after one job, discarding its overlayroot
+          # and scratch disk. Never run these effects in an ARC container or a live node.
+          test "${RUNNER_ENVIRONMENT:-}" = self-hosted
+          test "${RUNNER_OS:-}" = Linux
+          test "${RUNNER_ARCH:-}" = X64
+          # Fixed takaiba pools in the Shibuya/Tochigi JIT manifests. The broker adds a
+          # six-hex registration suffix; 08 is another org and 28 is the Android pool.
+          if [[ ! ${RUNNER_NAME:-} =~ ^gha-linux-25(-[a-f0-9]{6})?$ ]]; then
+            echo 'Unrecognized Linux VM runner' >&2; exit 1
+          fi
+          test "$(id -u)" -ne 0
+          systemd-detect-virt --vm --quiet
+          if systemd-detect-virt --container --quiet; then echo 'Container runner refused' >&2; exit 1; fi
+          mountpoint -q /media/root-ro
+          test "$(findmnt -n -o FSTYPE /)" = overlay
+          test "$(findmnt -n -o FSTYPE /run)" = tmpfs
+          case ",$(findmnt -n -o OPTIONS /media/root-ro)," in *,ro,*) ;; *) echo 'Read-only VM base required' >&2; exit 1 ;; esac
+          # mkdir is intentionally not idempotent: a second job in the same boot refuses.
+          sudo mkdir -m 0700 /run/takaiba-ci-first-job
+          sudo mount -o remount,exec /run
+          python3 - <<'PY' | tee "$RUNNER_TEMP/linux-vm-proof.json"
+          import json, os, platform
+          print(json.dumps({"runnerName": os.environ["RUNNER_NAME"], "runId": os.environ["GITHUB_RUN_ID"],
+              "runAttempt": os.environ["GITHUB_RUN_ATTEMPT"], "kernel": platform.release(),
+              "bootId": open('/proc/sys/kernel/random/boot_id').read().strip(),
+              "readOnlyBase": True, "overlayRoot": True, "firstJobThisBoot": True}))
+          PY
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
@@ -54,6 +88,40 @@ jobs:
       run:
         working-directory: ta-backend-ml
     steps:
+      - name: Verify the dedicated disposable public VM
+        working-directory: ${{ runner.temp }}
+        shell: bash
+        run: |
+          #!/usr/bin/env bash
+          set -euo pipefail
+          
+          # The fixed infra-mcp JIT pool reboots after one job, discarding its overlayroot
+          # and scratch disk. Never run these effects in an ARC container or a live node.
+          test "${RUNNER_ENVIRONMENT:-}" = self-hosted
+          test "${RUNNER_OS:-}" = Linux
+          test "${RUNNER_ARCH:-}" = X64
+          # Fixed takaiba pools in the Shibuya/Tochigi JIT manifests. The broker adds a
+          # six-hex registration suffix; 08 is another org and 28 is the Android pool.
+          if [[ ! ${RUNNER_NAME:-} =~ ^gha-linux-25(-[a-f0-9]{6})?$ ]]; then
+            echo 'Unrecognized Linux VM runner' >&2; exit 1
+          fi
+          test "$(id -u)" -ne 0
+          systemd-detect-virt --vm --quiet
+          if systemd-detect-virt --container --quiet; then echo 'Container runner refused' >&2; exit 1; fi
+          mountpoint -q /media/root-ro
+          test "$(findmnt -n -o FSTYPE /)" = overlay
+          test "$(findmnt -n -o FSTYPE /run)" = tmpfs
+          case ",$(findmnt -n -o OPTIONS /media/root-ro)," in *,ro,*) ;; *) echo 'Read-only VM base required' >&2; exit 1 ;; esac
+          # mkdir is intentionally not idempotent: a second job in the same boot refuses.
+          sudo mkdir -m 0700 /run/takaiba-ci-first-job
+          sudo mount -o remount,exec /run
+          python3 - <<'PY' | tee "$RUNNER_TEMP/linux-vm-proof.json"
+          import json, os, platform
+          print(json.dumps({"runnerName": os.environ["RUNNER_NAME"], "runId": os.environ["GITHUB_RUN_ID"],
+              "runAttempt": os.environ["GITHUB_RUN_ATTEMPT"], "kernel": platform.release(),
+              "bootId": open('/proc/sys/kernel/random/boot_id').read().strip(),
+              "readOnlyBase": True, "overlayRoot": True, "firstJobThisBoot": True}))
+          PY
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
@@ -73,6 +141,40 @@ jobs:
       run:
         working-directory: ta-backend-ml
     steps:
+      - name: Verify the dedicated disposable public VM
+        working-directory: ${{ runner.temp }}
+        shell: bash
+        run: |
+          #!/usr/bin/env bash
+          set -euo pipefail
+          
+          # The fixed infra-mcp JIT pool reboots after one job, discarding its overlayroot
+          # and scratch disk. Never run these effects in an ARC container or a live node.
+          test "${RUNNER_ENVIRONMENT:-}" = self-hosted
+          test "${RUNNER_OS:-}" = Linux
+          test "${RUNNER_ARCH:-}" = X64
+          # Fixed takaiba pools in the Shibuya/Tochigi JIT manifests. The broker adds a
+          # six-hex registration suffix; 08 is another org and 28 is the Android pool.
+          if [[ ! ${RUNNER_NAME:-} =~ ^gha-linux-25(-[a-f0-9]{6})?$ ]]; then
+            echo 'Unrecognized Linux VM runner' >&2; exit 1
+          fi
+          test "$(id -u)" -ne 0
+          systemd-detect-virt --vm --quiet
+          if systemd-detect-virt --container --quiet; then echo 'Container runner refused' >&2; exit 1; fi
+          mountpoint -q /media/root-ro
+          test "$(findmnt -n -o FSTYPE /)" = overlay
+          test "$(findmnt -n -o FSTYPE /run)" = tmpfs
+          case ",$(findmnt -n -o OPTIONS /media/root-ro)," in *,ro,*) ;; *) echo 'Read-only VM base required' >&2; exit 1 ;; esac
+          # mkdir is intentionally not idempotent: a second job in the same boot refuses.
+          sudo mkdir -m 0700 /run/takaiba-ci-first-job
+          sudo mount -o remount,exec /run
+          python3 - <<'PY' | tee "$RUNNER_TEMP/linux-vm-proof.json"
+          import json, os, platform
+          print(json.dumps({"runnerName": os.environ["RUNNER_NAME"], "runId": os.environ["GITHUB_RUN_ID"],
+              "runAttempt": os.environ["GITHUB_RUN_ATTEMPT"], "kernel": platform.release(),
+              "bootId": open('/proc/sys/kernel/random/boot_id').read().strip(),
+              "readOnlyBase": True, "overlayRoot": True, "firstJobThisBoot": True}))
+          PY
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
@@ -105,6 +207,40 @@ jobs:
       run:
         working-directory: ta-backend-ml
     steps:
+      - name: Verify the dedicated disposable public VM
+        working-directory: ${{ runner.temp }}
+        shell: bash
+        run: |
+          #!/usr/bin/env bash
+          set -euo pipefail
+          
+          # The fixed infra-mcp JIT pool reboots after one job, discarding its overlayroot
+          # and scratch disk. Never run these effects in an ARC container or a live node.
+          test "${RUNNER_ENVIRONMENT:-}" = self-hosted
+          test "${RUNNER_OS:-}" = Linux
+          test "${RUNNER_ARCH:-}" = X64
+          # Fixed takaiba pools in the Shibuya/Tochigi JIT manifests. The broker adds a
+          # six-hex registration suffix; 08 is another org and 28 is the Android pool.
+          if [[ ! ${RUNNER_NAME:-} =~ ^gha-linux-25(-[a-f0-9]{6})?$ ]]; then
+            echo 'Unrecognized Linux VM runner' >&2; exit 1
+          fi
+          test "$(id -u)" -ne 0
+          systemd-detect-virt --vm --quiet
+          if systemd-detect-virt --container --quiet; then echo 'Container runner refused' >&2; exit 1; fi
+          mountpoint -q /media/root-ro
+          test "$(findmnt -n -o FSTYPE /)" = overlay
+          test "$(findmnt -n -o FSTYPE /run)" = tmpfs
+          case ",$(findmnt -n -o OPTIONS /media/root-ro)," in *,ro,*) ;; *) echo 'Read-only VM base required' >&2; exit 1 ;; esac
+          # mkdir is intentionally not idempotent: a second job in the same boot refuses.
+          sudo mkdir -m 0700 /run/takaiba-ci-first-job
+          sudo mount -o remount,exec /run
+          python3 - <<'PY' | tee "$RUNNER_TEMP/linux-vm-proof.json"
+          import json, os, platform
+          print(json.dumps({"runnerName": os.environ["RUNNER_NAME"], "runId": os.environ["GITHUB_RUN_ID"],
+              "runAttempt": os.environ["GITHUB_RUN_ATTEMPT"], "kernel": platform.release(),
+              "bootId": open('/proc/sys/kernel/random/boot_id').read().strip(),
+              "readOnlyBase": True, "overlayRoot": True, "firstJobThisBoot": True}))
+          PY
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
